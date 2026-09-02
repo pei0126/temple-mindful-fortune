@@ -25,12 +25,25 @@ def run_tests():
     assert len(data['models']) >= 3
     print(f'[PASS] Models API: {len(data["models"])} models in catalog, default: {data["current_default"]}.')
 
-    # 3. Test Admin Set Model API: POST /api/admin/set_model
-    res = client.post('/api/admin/set_model', json={'model': 'gemini-3.1-flash-lite-preview'})
+    # 3. Test Admin Authentication & Protected Set Model API
+    # 3a. Unauthorized attempt (no password / wrong password) -> should fail 401
+    res_unauth = client.post('/api/admin/set_model', json={'model': 'gemini-3.1-flash-lite-preview'})
+    assert res_unauth.status_code == 401, 'Unauthorized request should be blocked with 401'
+    
+    # 3b. Verify Password endpoint test
+    res_verify_fail = client.post('/api/admin/verify', json={'password': 'wrong_password_123'})
+    assert res_verify_fail.status_code == 401, 'Wrong password must fail'
+
+    res_verify_ok = client.post('/api/admin/verify', json={'password': 'temple888'})
+    assert res_verify_ok.status_code == 200, 'Correct password must succeed'
+
+    # 3c. Authorized set_model request with password
+    res = client.post('/api/admin/set_model', json={'model': 'gemini-3.1-flash-lite-preview', 'password': 'temple888'})
     set_data = res.json()
+    assert res.status_code == 200
     assert set_data['success'] is True
     assert set_data['active_model'] == 'gemini-3.1-flash-lite-preview'
-    print(f'[PASS] Admin Set Model API: Successfully updated active model to {set_data["active_model"]}.')
+    print(f'[PASS] Admin Security: Protected endpoint rejected unauthorized access & accepted temple888.')
 
     # 4. Test /api/lots for all systems
     for sys_id, expected_count in [('60_jiazi', 60), ('guandi_100', 100), ('guanyin_100', 100)]:

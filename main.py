@@ -5,7 +5,7 @@ import logging
 import sqlite3
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -25,6 +25,7 @@ DB_PATH = os.getenv("DB_PATH", "temple.db").strip()
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or os.getenv("GEMINI_API_KEY") or "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gemini-3.1-flash-lite-preview").strip()
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "temple888").strip()
 
 # 支援的多模型清單 (Multi-Model Catalog)
 AVAILABLE_MODELS = [
@@ -240,11 +241,16 @@ class InterpretRequest(BaseModel):
     user_question: str = Field(..., min_length=2, max_length=500, description="使用者目前面臨的困境或想詢問的事情")
     model: Optional[str] = Field(default=None, description="選用的 AI 模型 (如未指定則採用管理員預設模型)")
 
+class AdminAuthRequest(BaseModel):
+    password: str = Field(..., description="管理員密碼")
+
 class AdminSetModelRequest(BaseModel):
     model: str = Field(..., description="欲設定為全站預設的 AI 模型 ID")
+    password: Optional[str] = Field(default=None, description="管理員密碼")
 
 class AdminTestConnectionRequest(BaseModel):
     model: Optional[str] = Field(default=None, description="欲測試的模型 ID")
+    password: Optional[str] = Field(default=None, description="管理員密碼")
 
 class ActionGuide(BaseModel):
     dos: List[str] = Field(description="建議採取的具體行動 (Do's)")
@@ -480,9 +486,20 @@ async def get_available_models():
         "models": AVAILABLE_MODELS
     }
 
+@app.post("/api/admin/verify")
+async def verify_admin(req: AdminAuthRequest):
+    """【管理者安全驗證】驗證管理員通行密碼"""
+    if req.password.strip() == ADMIN_PASSWORD:
+        return {"success": True, "message": "管理員密碼驗證成功"}
+    raise HTTPException(status_code=401, detail="管理員密碼錯誤，請重新輸入")
+
 @app.post("/api/admin/set_model")
-async def admin_set_model(req: AdminSetModelRequest):
-    """【管理者 API】切換全站執行時期預設 AI 模型"""
+async def admin_set_model(req: AdminSetModelRequest, x_admin_password: Optional[str] = Header(None)):
+    """【管理者 API】切換全站執行時期預設 AI 模型 (需密碼授權)"""
+    provided_password = (req.password or x_admin_password or "").strip()
+    if provided_password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="管理者密碼驗證失敗，無權限執行此操作")
+
     global current_runtime_model
     normalized = normalize_model_name(req.model)
     current_runtime_model = normalized
@@ -494,8 +511,12 @@ async def admin_set_model(req: AdminSetModelRequest):
     }
 
 @app.post("/api/admin/test_connection")
-async def admin_test_connection(req: AdminTestConnectionRequest):
-    """【管理者 API】一鍵測試指定模型之 API 連線與延遲回應"""
+async def admin_test_connection(req: AdminTestConnectionRequest, x_admin_password: Optional[str] = Header(None)):
+    """【管理者 API】一鍵測試指定模型之 API 連線與延遲回應 (需密碼授權)"""
+    provided_password = (req.password or x_admin_password or "").strip()
+    if provided_password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="管理者密碼驗證失敗，無權限執行此操作")
+
     target = req.model or current_runtime_model
     client, model_id = get_llm_client(target)
     

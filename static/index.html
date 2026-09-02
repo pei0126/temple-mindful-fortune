@@ -1005,99 +1005,155 @@
   </footer>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: 「設計者與管理者設定控制台」 (Admin Modal) -->
+  <!-- MODAL: 「設計者與管理者設定控制台」 (Admin Modal with Password Protection) -->
   <!-- ========================================================================= -->
-  <div id="admin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+  <div id="admin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
     <div class="bg-slate-900 border border-amber-500/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden relative">
       
       <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
         <div class="flex items-center gap-2.5 text-amber-300 font-serif font-bold text-base">
-          <i class="fa-solid fa-sliders text-amber-400"></i>
-          <span>設計者與管理者控制台</span>
+          <i id="admin-modal-header-icon" class="fa-solid fa-lock text-amber-400"></i>
+          <span id="admin-modal-header-title">管理者身分驗證</span>
         </div>
-        <button type="button" onclick="closeAdminModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition cursor-pointer">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            id="admin-logout-btn"
+            onclick="logoutAdmin()" 
+            class="hidden px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-300 text-xs transition cursor-pointer"
+            title="登出管理員"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>鎖定登出</span>
+          </button>
+          <button type="button" onclick="closeAdminModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition cursor-pointer">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Modal Body -->
-      <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
-        
-        <!-- 1. AI Model Selection Section -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-            🎛️ 全站預設解籤 AI 模型切換：
-          </label>
-          <select 
-            id="admin-model-select"
-            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-xs sm:text-sm text-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition cursor-pointer"
-          >
-            <option value="gemini-3.1-flash-lite-preview">✨ Gemini 3.1 Flash-Lite Preview (推薦・極速)</option>
-            <option value="gemini-3.1-pro-preview">🧠 Gemini 3.1 Pro Preview (深度推理)</option>
-            <option value="gemini-3-flash-preview">⚡ Gemini 3 Flash Preview (旗艦閃速)</option>
-            <option value="gpt-4o">🌟 GPT-4o (OpenAI 旗艦)</option>
-            <option value="gpt-4o-mini">🚀 GPT-4o mini (OpenAI 輕量)</option>
-          </select>
-          <p id="admin-model-desc" class="text-[11px] text-slate-400 mt-1.5 leading-relaxed"></p>
+      <!-- VIEW 1: Password Login Form (未授權狀態) -->
+      <div id="admin-auth-view" class="p-6 sm:p-8 space-y-5 text-center">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-2xl shadow-lg">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-base font-bold text-white font-serif">站長管理後台安全驗證</h4>
+          <p class="text-xs text-slate-400">此區域僅限站長進行模型切換與系統維運，請輸入通行密碼：</p>
         </div>
 
-        <!-- 2. Test Connection Button & Status Feedback -->
-        <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-300">📡 API 連線與延遲檢測：</span>
+        <form id="admin-auth-form" onsubmit="handleAdminLogin(event)" class="space-y-4 pt-2">
+          <div>
+            <input 
+              type="password" 
+              id="admin-password-input" 
+              required
+              placeholder="請輸入管理者密碼 (預設: temple888)"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-center text-amber-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 tracking-widest transition"
+            />
+            <p id="admin-auth-error" class="hidden text-xs text-rose-400 mt-2 font-medium"></p>
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
             <button 
               type="button" 
-              onclick="testModelConnection()" 
-              id="admin-test-btn"
-              class="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              onclick="closeAdminModal()" 
+              class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
             >
-              <i class="fa-solid fa-bolt"></i>
-              <span>測試連線</span>
+              取消
+            </button>
+            <button 
+              type="submit" 
+              id="admin-login-btn"
+              class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <i class="fa-solid fa-key"></i>
+              <span>解鎖進入</span>
             </button>
           </div>
-          <div id="admin-test-result" class="text-xs text-slate-400 min-h-[20px] flex items-center gap-1.5">
-            <span class="text-slate-500">點擊「測試連線」驗證目前選定模型的 API 回應狀態。</span>
-          </div>
-        </div>
-
-        <!-- 3. System & Database Health Stats -->
-        <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/80 space-y-2 text-xs">
-          <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">系統即時監控資訊：</h5>
-          <div class="flex items-center justify-between text-slate-300">
-            <span class="text-slate-400">SQLite 籤詩資料庫：</span>
-            <span class="text-emerald-400 font-mono flex items-center gap-1"><i class="fa-solid fa-circle-check text-[10px]"></i> 已連線 (260 首全本)</span>
-          </div>
-          <div class="flex items-center justify-between text-slate-300">
-            <span class="text-slate-400">目前執行時期主力模型：</span>
-            <span id="admin-active-model-display" class="text-amber-300 font-mono font-bold">gemini-3.1-flash-lite-preview</span>
-          </div>
-          <div class="flex items-center justify-between text-slate-300">
-            <span class="text-slate-400">安全金鑰狀態：</span>
-            <span class="text-emerald-400 font-mono">已配置 (Google Gemini)</span>
-          </div>
-        </div>
-
+        </form>
       </div>
 
-      <!-- Modal Footer -->
-      <div class="px-6 py-4 bg-slate-950/80 border-t border-slate-800 flex items-center justify-end gap-3">
-        <button 
-          type="button" 
-          onclick="closeAdminModal()" 
-          class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
-        >
-          取消
-        </button>
-        <button 
-          type="button" 
-          onclick="saveAdminModel()" 
-          id="admin-save-btn"
-          class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition cursor-pointer shadow-md flex items-center gap-1.5"
-        >
-          <i class="fa-solid fa-check"></i>
-          <span>儲存並套用模型</span>
-        </button>
+      <!-- VIEW 2: Admin Panel Controls (已授權狀態) -->
+      <div id="admin-panel-view" class="hidden">
+        <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          
+          <!-- 1. AI Model Selection Section -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              🎛️ 全站預設解籤 AI 模型切換：
+            </label>
+            <select 
+              id="admin-model-select"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-xs sm:text-sm text-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition cursor-pointer"
+            >
+              <option value="gemini-3.1-flash-lite-preview">✨ Gemini 3.1 Flash-Lite Preview (推薦・極速)</option>
+              <option value="gemini-3.1-pro-preview">🧠 Gemini 3.1 Pro Preview (深度推理)</option>
+              <option value="gemini-3-flash-preview">⚡ Gemini 3 Flash Preview (旗艦閃速)</option>
+              <option value="gpt-4o">🌟 GPT-4o (OpenAI 旗艦)</option>
+              <option value="gpt-4o-mini">🚀 GPT-4o mini (OpenAI 輕量)</option>
+            </select>
+            <p id="admin-model-desc" class="text-[11px] text-slate-400 mt-1.5 leading-relaxed"></p>
+          </div>
+
+          <!-- 2. Test Connection Button & Status Feedback -->
+          <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-300">📡 API 連線與延遲檢測：</span>
+              <button 
+                type="button" 
+                onclick="testModelConnection()" 
+                id="admin-test-btn"
+                class="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <i class="fa-solid fa-bolt"></i>
+                <span>測試連線</span>
+              </button>
+            </div>
+            <div id="admin-test-result" class="text-xs text-slate-400 min-h-[20px] flex items-center gap-1.5">
+              <span class="text-slate-500">點擊「測試連線」驗證目前選定模型的 API 回應狀態。</span>
+            </div>
+          </div>
+
+          <!-- 3. System & Database Health Stats -->
+          <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/80 space-y-2 text-xs">
+            <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">系統即時監控資訊：</h5>
+            <div class="flex items-center justify-between text-slate-300">
+              <span class="text-slate-400">SQLite 籤詩資料庫：</span>
+              <span class="text-emerald-400 font-mono flex items-center gap-1"><i class="fa-solid fa-circle-check text-[10px]"></i> 已連線 (260 首全本)</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-300">
+              <span class="text-slate-400">目前執行時期主力模型：</span>
+              <span id="admin-active-model-display" class="text-amber-300 font-mono font-bold">gemini-3.1-flash-lite-preview</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-300">
+              <span class="text-slate-400">安全金鑰狀態：</span>
+              <span class="text-emerald-400 font-mono">已配置 (Google Gemini)</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 bg-slate-950/80 border-t border-slate-800 flex items-center justify-end gap-3">
+          <button 
+            type="button" 
+            onclick="closeAdminModal()" 
+            class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+          >
+            關閉
+          </button>
+          <button 
+            type="button" 
+            onclick="saveAdminModel()" 
+            id="admin-save-btn"
+            class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition cursor-pointer shadow-md flex items-center gap-1.5"
+          >
+            <i class="fa-solid fa-check"></i>
+            <span>儲存並套用模型</span>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -1195,7 +1251,34 @@
     document.getElementById('admin-model-select')?.addEventListener('change', updateAdminModelDesc);
 
     function openAdminModal() {
-      loadAdminConfig();
+      const isAuth = sessionStorage.getItem('temple_admin_auth') === 'true';
+      const authView = document.getElementById('admin-auth-view');
+      const panelView = document.getElementById('admin-panel-view');
+      const headerTitle = document.getElementById('admin-modal-header-title');
+      const headerIcon = document.getElementById('admin-modal-header-icon');
+      const logoutBtn = document.getElementById('admin-logout-btn');
+      const errorMsg = document.getElementById('admin-auth-error');
+
+      if (errorMsg) errorMsg.classList.add('hidden');
+
+      if (isAuth) {
+        authView.classList.add('hidden');
+        panelView.classList.remove('hidden');
+        headerTitle.innerText = '設計者與管理者控制台';
+        headerIcon.className = 'fa-solid fa-sliders text-amber-400';
+        logoutBtn.classList.remove('hidden');
+        loadAdminConfig();
+      } else {
+        authView.classList.remove('hidden');
+        panelView.classList.add('hidden');
+        headerTitle.innerText = '管理者身分安全驗證';
+        headerIcon.className = 'fa-solid fa-lock text-amber-400';
+        logoutBtn.classList.add('hidden');
+        setTimeout(() => {
+          document.getElementById('admin-password-input')?.focus();
+        }, 100);
+      }
+
       document.getElementById('admin-modal').classList.remove('hidden');
     }
 
@@ -1203,10 +1286,60 @@
       document.getElementById('admin-modal').classList.add('hidden');
     }
 
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      const pwdInput = document.getElementById('admin-password-input');
+      const password = pwdInput ? pwdInput.value.trim() : '';
+      const loginBtn = document.getElementById('admin-login-btn');
+      const errorElem = document.getElementById('admin-auth-error');
+
+      if (!password) return;
+
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> 驗證中...';
+      if (errorElem) errorElem.classList.add('hidden');
+
+      try {
+        const response = await fetch('/api/admin/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: password })
+        });
+
+        if (response.ok) {
+          sessionStorage.setItem('temple_admin_auth', 'true');
+          sessionStorage.setItem('temple_admin_token', password);
+          if (pwdInput) pwdInput.value = '';
+          openAdminModal();
+        } else {
+          const errData = await response.json().catch(() => ({ detail: '密碼錯誤' }));
+          if (errorElem) {
+            errorElem.innerText = errData.detail || '管理員密碼錯誤，請重新輸入';
+            errorElem.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        if (errorElem) {
+          errorElem.innerText = `連線異常: ${err.message}`;
+          errorElem.classList.remove('hidden');
+        }
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fa-solid fa-key"></i> <span>解鎖進入</span>';
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('temple_admin_auth');
+      sessionStorage.removeItem('temple_admin_token');
+      openAdminModal();
+    }
+
     async function saveAdminModel() {
       const adminSelect = document.getElementById('admin-model-select');
       const selectedModel = adminSelect.value;
       const saveBtn = document.getElementById('admin-save-btn');
+      const token = sessionStorage.getItem('temple_admin_token') || '';
       
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> 儲存中...';
@@ -1214,17 +1347,20 @@
       try {
         const response = await fetch('/api/admin/set_model', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: selectedModel })
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Admin-Password': token
+          },
+          body: JSON.stringify({ model: selectedModel, password: token })
         });
         const data = await response.json();
-        if (data.success) {
+        if (response.ok && data.success) {
           currentSystemDefaultModel = data.active_model;
           document.getElementById('admin-active-model-display').innerText = currentSystemDefaultModel;
           alert(`全站預設 AI 模型已切換為：${currentSystemDefaultModel}`);
           closeAdminModal();
         } else {
-          alert('設定失敗，請檢查後端日誌');
+          alert(`設定失敗: ${data.detail || '權限驗證不符'}`);
         }
       } catch (err) {
         alert(`設定錯誤: ${err.message}`);
@@ -1239,6 +1375,7 @@
       const targetModel = adminSelect.value;
       const testBtn = document.getElementById('admin-test-btn');
       const resultElem = document.getElementById('admin-test-result');
+      const token = sessionStorage.getItem('temple_admin_token') || '';
 
       testBtn.disabled = true;
       testBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> 測試中...';
@@ -1247,14 +1384,17 @@
       try {
         const response = await fetch('/api/admin/test_connection', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: targetModel })
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Admin-Password': token
+          },
+          body: JSON.stringify({ model: targetModel, password: token })
         });
         const data = await response.json();
-        if (data.success) {
+        if (response.ok && data.success) {
           resultElem.innerHTML = `<span class="text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> ${data.message}</span>`;
         } else {
-          resultElem.innerHTML = `<span class="text-rose-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> ${data.message}</span>`;
+          resultElem.innerHTML = `<span class="text-rose-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> ${data.message || data.detail}</span>`;
         }
       } catch (err) {
         resultElem.innerHTML = `<span class="text-rose-400">測試連線異常: ${err.message}</span>`;
