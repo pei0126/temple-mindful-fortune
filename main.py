@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # 環境變數與多模型 (Multi-Model) 支援設定
 # ==============================================================================
 DB_PATH = os.getenv("DB_PATH", "temple.db").strip()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or os.getenv("GEMINI_API_KEY") or "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gemini-3.1-flash-lite-preview").strip()
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()
 
