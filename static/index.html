@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心靈解籤伴侶 ｜ 傳統靈籤與現代心理學賦權系統</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Serif TC & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Noto Serif TC"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#fcf8f2',
+              100: '#f8f0e3',
+              500: '#d97706',
+              600: '#b45309',
+              900: '#1e1b18',
+            },
+            zen: {
+              dark: '#0f172a',
+              card: '#1e293b',
+              gold: '#fbbf24',
+              red: '#e11d48',
+              green: '#10b981'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .poem-vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 0.35em;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .main-tab-active {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.3));
+      border-color: rgba(245, 158, 11, 0.7) !important;
+      color: #fbbf24 !important;
+      box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.25);
+    }
+    .system-tab-active {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.25));
+      border-color: rgba(245, 158, 11, 0.6) !important;
+      color: #fbbf24 !important;
+      box-shadow: 0 4px 15px -2px rgba(245, 158, 11, 0.2);
+    }
+    .daily-tab-active {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.5);
+      color: #fde68a;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+      50% { box-shadow: 0 0 28px rgba(245, 158, 11, 0.45); }
+    }
+    .card-glow {
+      animation: pulse-glow 3s infinite ease-in-out;
+    }
+    @keyframes flip-reveal {
+      0% { transform: scale(0.96) rotateY(15deg); opacity: 0; }
+      100% { transform: scale(1) rotateY(0); opacity: 1; }
+    }
+    .animate-flip {
+      animation: flip-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* === ⛩️ 抽籤與擲筊動畫特效 (Lot Drawing & Bwa Bwei Animations) === */
+    @keyframes cylinder-shake {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      15% { transform: rotate(-9deg) translateX(-6px) translateY(-2px); }
+      30% { transform: rotate(8deg) translateX(6px) translateY(1px); }
+      45% { transform: rotate(-7deg) translateX(-4px) translateY(-2px); }
+      60% { transform: rotate(6deg) translateX(4px) translateY(1px); }
+      75% { transform: rotate(-4deg) translateX(-2px) translateY(-1px); }
+      90% { transform: rotate(3deg) translateX(2px) translateY(0); }
+    }
+    .animate-cylinder-shake {
+      animation: cylinder-shake 1.4s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+
+    @keyframes stick-bounce-a {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-14px); }
+    }
+    @keyframes stick-bounce-b {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-22px); }
+    }
+    @keyframes stick-bounce-c {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-stick-a { animation: stick-bounce-a 0.45s ease-in-out infinite alternate; }
+    .animate-stick-b { animation: stick-bounce-b 0.4s ease-in-out infinite 0.1s alternate; }
+    .animate-stick-c { animation: stick-bounce-c 0.5s ease-in-out infinite 0.05s alternate; }
+
+    @keyframes stick-rise {
+      0% { transform: translateY(0) scale(1); opacity: 0.9; }
+      100% { transform: translateY(-48px) scale(1.15); opacity: 1; filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.95)); }
+    }
+    .animate-stick-rise {
+      animation: stick-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* 擲筊（聖筊）翻騰落地動畫 */
+    @keyframes bwa-flip-left {
+      0% { transform: translateY(40px) rotate(0deg) scale(0.6); opacity: 0; }
+      30% { transform: translateY(-60px) rotate(-190deg) scale(1.2); opacity: 1; }
+      65% { transform: translateY(12px) rotate(-350deg) scale(0.95); }
+      85% { transform: translateY(-6px) rotate(-362deg) scale(1.02); }
+      100% { transform: translateY(0) rotate(-360deg) scale(1); }
+    }
+    @keyframes bwa-flip-right {
+      0% { transform: translateY(40px) rotate(0deg) scale(0.6); opacity: 0; }
+      30% { transform: translateY(-65px) rotate(190deg) scale(1.2); opacity: 1; }
+      65% { transform: translateY(14px) rotate(350deg) scale(0.95); }
+      85% { transform: translateY(-7px) rotate(362deg) scale(1.02); }
+      100% { transform: translateY(0) rotate(360deg) scale(1); }
+    }
+    .animate-bwa-left { animation: bwa-flip-left 1.1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .animate-bwa-right { animation: bwa-flip-right 1.1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+    /* 心理賦權解籤流光與光環 */
+    @keyframes spin-slow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes spin-reverse-slow {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+    .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+    .animate-spin-reverse-slow { animation: spin-reverse-slow 12s linear infinite; }
+
+    @keyframes pulse-wisdom-orb {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(245, 158, 11, 0.3), inset 0 0 15px rgba(245, 158, 11, 0.2); }
+      50% { transform: scale(1.06); box-shadow: 0 0 45px rgba(245, 158, 11, 0.6), 0 0 80px rgba(168, 85, 247, 0.35), inset 0 0 25px rgba(245, 158, 11, 0.4); }
+    }
+    .animate-wisdom-orb { animation: pulse-wisdom-orb 2.4s ease-in-out infinite; }
+
+    @keyframes shimmer-flow {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer-progress {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.2) 0%, rgba(251, 191, 36, 0.9) 50%, rgba(245, 158, 11, 0.2) 100%);
+      background-size: 200% 100%;
+      animation: shimmer-flow 2s infinite linear;
+    }
+
+    /* 結果卡片階梯式進場 (Staggered Entrance) */
+    @keyframes slide-up-smooth {
+      0% { opacity: 0; transform: translateY(22px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .stagger-in-1 { animation: slide-up-smooth 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+    .stagger-in-2 { animation: slide-up-smooth 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both; }
+    .stagger-in-3 { animation: slide-up-smooth 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.30s both; }
+    .stagger-in-4 { animation: slide-up-smooth 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.42s both; }
+
+    /* Custom Scrollbar for Dropdown / Previews */
+    select option {
+      background-color: #0f172a;
+      color: #f1f5f9;
+      padding: 8px 12px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-full font-sans antialiased flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+  <!-- Header / Navigation (純淨前台使用者導向) -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-40 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20 text-slate-950 font-bold">
+          <i class="fa-solid fa-scroll text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight font-serif flex items-center gap-2">
+            心靈解籤伴侶
+            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-sans">260 靈籤全本</span>
+          </h1>
+          <p class="text-[11px] sm:text-xs text-slate-400">三大宮廟籤詩系統・結合認知心理學與行動指引</p>
+        </div>
+      </div>
+
+      <!-- Right Header: Spiritual Badge & Admin Entry -->
+      <div class="flex items-center gap-3">
+        <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          嚴格非算命・以心理賦權為本
+        </span>
+        <button 
+          type="button" 
+          onclick="openAdminModal()" 
+          class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-300 border border-slate-800 transition text-xs flex items-center gap-1.5 cursor-pointer"
+          title="設計者與管理者設定"
+        >
+          <i class="fa-solid fa-gear text-sm"></i>
+          <span class="hidden sm:inline">管理者設定</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-4xl mx-auto px-4 py-6 w-full flex-1">
+
+    <!-- Hero Introduction -->
+    <div class="text-center mb-6">
+      <span class="inline-block mb-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+        Empathetic & Psychological Fortune Guidance
+      </span>
+      <h2 class="text-2xl sm:text-3xl font-bold font-serif tracking-tight text-white mb-2">
+        在人生十字路口，請益古今靈籤智慧
+      </h2>
+      <p class="text-slate-400 text-xs sm:text-sm max-w-xl mx-auto">
+        籤詩是投射內在思維的鏡子。請選擇您當下想要進行的功能模式：
+      </p>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- Top-Level Main Feature Tabs (三大獨立功能分頁) -->
+    <!-- ========================================================================= -->
+    <div class="mb-8">
+      <div class="grid grid-cols-3 gap-2 sm:gap-3 p-1.5 bg-slate-900/90 rounded-2xl border border-slate-800">
+        
+        <!-- Tab 1: 📅 每日一籤 -->
+        <button 
+          type="button" 
+          onclick="switchMainTab('daily')" 
+          id="main-tab-daily" 
+          class="main-tab-btn main-tab-active flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 py-3 px-2 sm:px-4 rounded-xl border border-transparent transition cursor-pointer text-center group text-slate-300"
+        >
+          <span class="text-lg">📅</span>
+          <div class="text-left">
+            <span class="block text-xs sm:text-sm font-bold font-serif group-hover:text-amber-300 transition">每日一籤</span>
+            <span class="hidden md:block text-[11px] text-slate-400 mt-0.5">每日晨光・靜思開悟</span>
+          </div>
+        </button>
+
+        <!-- Tab 2: 🙏 祈禱抽籤 -->
+        <button 
+          type="button" 
+          onclick="switchMainTab('prayer')" 
+          id="main-tab-prayer" 
+          class="main-tab-btn flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 py-3 px-2 sm:px-4 rounded-xl border border-transparent transition cursor-pointer text-center group text-slate-400 hover:text-slate-200"
+        >
+          <span class="text-lg">🙏</span>
+          <div class="text-left">
+            <span class="block text-xs sm:text-sm font-bold font-serif group-hover:text-amber-300 transition">祈禱抽籤</span>
+            <span class="hidden md:block text-[11px] text-slate-400 mt-0.5">誠心請益・AI 解籤</span>
+          </div>
+        </button>
+
+        <!-- Tab 3: 📖 靈籤寶典 -->
+        <button 
+          type="button" 
+          onclick="switchMainTab('library')" 
+          id="main-tab-library" 
+          class="main-tab-btn flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 py-3 px-2 sm:px-4 rounded-xl border border-transparent transition cursor-pointer text-center group text-slate-400 hover:text-slate-200"
+        >
+          <span class="text-lg">📖</span>
+          <div class="text-left">
+            <span class="block text-xs sm:text-sm font-bold font-serif group-hover:text-amber-300 transition">靈籤寶典</span>
+            <span class="hidden md:block text-[11px] text-slate-400 mt-0.5">260 首全本・自選解籤</span>
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: 「📅 每日一籤」專屬分頁 (Daily Fortune View) -->
+    <!-- ========================================================================= -->
+    <div id="view-daily" class="main-view space-y-6">
+      <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-slate-900/90 via-slate-950/80 to-amber-950/20">
+        <div class="absolute -right-12 -top-12 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Card Top Bar: Date & System Switcher -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <i class="fa-regular fa-calendar-check text-lg"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold font-serif text-amber-300">📅 每日一籤 ｜ 今日心靈晨光</h3>
+                <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">今日指引</span>
+              </div>
+              <p id="daily-date-display" class="text-xs text-slate-400 mt-0.5">載入今日日期中...</p>
+            </div>
+          </div>
+
+          <!-- Daily System Switcher Pills -->
+          <div class="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800 self-stretch sm:self-auto justify-between sm:justify-start">
+            <button type="button" onclick="switchDailySystem('60_jiazi')" id="daily-tab-60_jiazi" class="daily-tab-btn daily-tab-active px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 transition cursor-pointer">
+              六十甲子籤
+            </button>
+            <button type="button" onclick="switchDailySystem('guandi_100')" id="daily-tab-guandi_100" class="daily-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition cursor-pointer">
+              關帝百籤
+            </button>
+            <button type="button" onclick="switchDailySystem('guanyin_100')" id="daily-tab-guanyin_100" class="daily-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition cursor-pointer">
+              觀音百籤
+            </button>
+          </div>
+        </div>
+
+        <!-- State 1: Unrevealed (未揭曉狀態) -->
+        <div id="daily-unrevealed-view" class="py-12 text-center space-y-5">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-500/20 to-amber-400/10 border border-amber-500/40 text-amber-400 shadow-xl card-glow mb-2">
+            <i class="fa-solid fa-seedling text-3xl"></i>
+          </div>
+          <div class="space-y-1.5">
+            <h4 class="text-lg font-serif font-bold text-slate-100">誠心領取今日專屬守護籤詩</h4>
+            <p class="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+              每日依日期與機緣定心為您抽出一首靈籤，搭配心理學賦權靜思，開啟清明沈著的一天。
+            </p>
+          </div>
+          <div class="pt-2">
+            <button 
+              type="button" 
+              onclick="revealDailyLot()" 
+              class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-500/25 transition cursor-pointer inline-flex items-center gap-2 transform hover:-translate-y-0.5"
+            >
+              <i class="fa-solid fa-hands-praying"></i>
+              <span>揭曉今日專屬靈籤</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- State 2: Revealed (已揭曉狀態) -->
+        <div id="daily-revealed-view" class="hidden pt-6 space-y-6 animate-flip">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            
+            <!-- Left: Daily Poem Card -->
+            <div class="md:col-span-6 bg-slate-950/80 border border-amber-500/30 rounded-2xl p-5 sm:p-6 relative overflow-hidden shadow-lg">
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span id="daily-lot-system-badge" class="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-amber-400 border border-slate-700 font-sans">
+                    六十甲子籤
+                  </span>
+                  <span id="daily-lot-title" class="font-serif font-bold text-base sm:text-lg text-amber-200">
+                    第一籤 甲子
+                  </span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span id="daily-lot-meta-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-sans hidden">
+                    ✨ 今日專屬初感應
+                  </span>
+                  <span id="daily-lot-grade" class="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-serif font-bold">
+                    大吉
+                  </span>
+                </div>
+              </div>
+
+              <!-- Poem Lines -->
+              <pre id="daily-lot-content" class="font-serif text-base sm:text-lg leading-relaxed text-slate-200 whitespace-pre-line tracking-widest font-medium text-center py-4 bg-slate-900/50 rounded-xl border border-slate-800/60"></pre>
+
+              <!-- Story -->
+              <div class="mt-4 text-xs text-slate-400 flex items-start gap-2 bg-slate-900/40 p-3 rounded-xl border border-slate-800/50">
+                <i class="fa-solid fa-book-bookmark text-amber-500/70 mt-0.5"></i>
+                <p id="daily-lot-story" class="line-clamp-2 leading-relaxed"></p>
+              </div>
+            </div>
+
+            <!-- Right: Daily Mindfulness / Takeaway -->
+            <div class="md:col-span-6 space-y-4">
+              <div class="bg-gradient-to-br from-amber-500/10 via-slate-900/80 to-slate-950/80 border border-amber-500/30 rounded-2xl p-5 shadow-lg">
+                <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-300 mb-2.5 font-serif">
+                  <i class="fa-solid fa-quote-left text-amber-400 text-base"></i>
+                  <span>今日一日一悟 ｜ 心理賦權靜思</span>
+                </div>
+                <p id="daily-lot-quote" class="text-xs sm:text-sm text-slate-200 leading-relaxed italic font-medium">
+                  「不為模糊不清的未來擔憂，只為清清楚楚的現在努力。安住當下，心無罣礙。」
+                </p>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="space-y-2.5 pt-1">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <button 
+                    type="button" 
+                    onclick="applyDailyToPrayer()" 
+                    class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500/25 to-amber-600/30 hover:from-amber-500/35 hover:to-amber-600/40 text-amber-200 border border-amber-500/50 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                    <span>帶入祈禱室深度請益</span>
+                  </button>
+                  
+                  <button 
+                    type="button" 
+                    id="daily-redraw-btn"
+                    onclick="redrawDailyLot()" 
+                    class="px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm group"
+                    title="重新抽取專屬靈籤"
+                  >
+                    <i id="daily-redraw-icon" class="fa-solid fa-rotate text-amber-400 transition-transform group-hover:rotate-180 duration-500"></i>
+                    <span>重新抽取今日籤</span>
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-end gap-2">
+                  <button 
+                    type="button" 
+                    onclick="copyDailyPoem()" 
+                    class="px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 text-xs font-medium transition flex items-center justify-center gap-1.5 cursor-pointer border border-slate-800"
+                    title="複製今日籤詩"
+                  >
+                    <i class="fa-regular fa-copy text-slate-400"></i>
+                    <span id="daily-copy-btn-text">複製籤文</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    onclick="reflipDailyLot()" 
+                    class="px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 text-xs font-medium transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="蓋回靈籤"
+                  >
+                    <i class="fa-solid fa-eye-slash text-slate-400"></i>
+                    <span>蓋回靈籤</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: 「🙏 祈禱抽籤」專屬分頁 (Prayer & Divination View) -->
+    <!-- ========================================================================= -->
+    <div id="view-prayer" class="main-view hidden space-y-6">
+      
+      <!-- Input & Draw Section -->
+      <div id="prayer-draw-card" class="glass-card rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-all duration-300">
+        <div class="absolute -right-16 -top-16 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- System Selector Tabs for Prayer -->
+        <div class="mb-6">
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
+            請選擇請教的籤詩系統：
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button 
+              type="button" 
+              onclick="selectPrayerSystem('60_jiazi', 60, '六十甲子籤')"
+              id="prayer-sys-60_jiazi"
+              class="prayer-sys-btn system-tab-active flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-700 bg-slate-900/80 hover:border-amber-500/50 transition cursor-pointer text-center group"
+            >
+              <span class="text-base mb-1">⛩️</span>
+              <span class="text-sm font-bold font-serif text-slate-100 group-hover:text-amber-400 transition">六十甲子籤</span>
+              <span class="text-[11px] text-slate-400 mt-0.5">傳統媽祖籤・共 60 首</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="selectPrayerSystem('guandi_100', 100, '關聖帝君一百籤')"
+              id="prayer-sys-guandi_100"
+              class="prayer-sys-btn flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500/50 transition cursor-pointer text-center group text-slate-400 hover:text-slate-200"
+            >
+              <span class="text-base mb-1">⚔️</span>
+              <span class="text-sm font-bold font-serif text-slate-300 group-hover:text-amber-400 transition">關聖帝君一百籤</span>
+              <span class="text-[11px] text-slate-500 mt-0.5">雷雨師籤・共 100 首</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="selectPrayerSystem('guanyin_100', 100, '觀音靈籤一百首')"
+              id="prayer-sys-guanyin_100"
+              class="prayer-sys-btn flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500/50 transition cursor-pointer text-center group text-slate-400 hover:text-slate-200"
+            >
+              <span class="text-base mb-1">🪷</span>
+              <span class="text-sm font-bold font-serif text-slate-300 group-hover:text-amber-400 transition">觀音靈籤一百首</span>
+              <span class="text-[11px] text-slate-500 mt-0.5">普陀觀音佛祖・共 100 首</span>
+            </button>
+          </div>
+        </div>
+
+        <form id="prayer-form" onsubmit="handlePrayerSubmit(event)" class="space-y-6">
+          <div>
+            <label for="prayer-question" class="block text-sm font-semibold text-slate-200 mb-2">
+              請寫下您當前心中的困惑、抉擇或具體處境：
+            </label>
+            <textarea
+              id="prayer-question"
+              rows="3"
+              required
+              placeholder="例如：我目前在考慮是否要在下個月離開現有穩定的工作去創業，內心既期待又擔心失敗，不知該如何決斷..."
+              class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition"
+            ></textarea>
+
+            <!-- Quick Test Question Chips -->
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <span class="text-xs text-slate-400">快速範例：</span>
+              <button type="button" onclick="setPrayerSampleQuestion('工作轉職：該留在現有舒適圈還是挑戰高薪但高風險的外商職位？')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white transition">
+                💼 職涯轉職抉擇
+              </button>
+              <button type="button" onclick="setPrayerSampleQuestion('人際溝通：與專案合作夥伴在理念上有嚴重分歧，感到挫折與溝通疲憊。')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white transition">
+                🤝 合作人際衝突
+              </button>
+              <button type="button" onclick="setPrayerSampleQuestion('新創專案：面對市場高度不確定性，團隊進度落後，該如何重整心態與方向？')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white transition">
+                🚀 專案瓶頸突破
+              </button>
+            </div>
+          </div>
+
+          <!-- Optional Preset Lot Indicator -->
+          <div id="prayer-preset-lot-badge" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center justify-between text-xs text-amber-300">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-link text-amber-400"></i>
+              <span>已指定籤號：<strong id="preset-lot-name-display" class="font-serif font-bold">第 1 籤 甲子</strong></span>
+            </div>
+            <button type="button" onclick="clearPresetLot()" class="text-slate-400 hover:text-slate-200 underline text-xs cursor-pointer">
+              清除指定（恢復隨機擲籤）
+            </button>
+          </div>
+
+          <div class="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-xs text-slate-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-hands-holding text-amber-400"></i>
+              <span>誠心祈請 ｜ 系統將結合大語言模型為您進行認知再架構剖析</span>
+            </div>
+
+            <button
+              type="submit"
+              id="prayer-submit-btn"
+              class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="fa-solid fa-hands-praying"></i>
+              <span>誠心擲筊求籤並解析</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Loading State: ⛩️ 沉浸式求籤、擲筊與解籤儀式動態 -->
+      <div id="prayer-loading-state" class="hidden glass-card rounded-2xl p-8 sm:p-12 text-center relative overflow-hidden my-6 border border-amber-500/40 bg-gradient-to-b from-slate-900/95 via-slate-950/90 to-amber-950/20 shadow-2xl">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- STAGE 1: 搖筒求籤 (Bamboo Cylinder Shaking) -->
+        <div id="anim-stage-cylinder" class="space-y-6">
+          <div class="relative w-36 h-48 mx-auto flex items-end justify-center">
+            <!-- Glow floor -->
+            <div class="absolute bottom-0 w-32 h-8 bg-amber-500/20 rounded-full blur-md"></div>
+            
+            <!-- Shaking Cylinder & Sticks -->
+            <div id="anim-cylinder-box" class="relative z-10 animate-cylinder-shake flex flex-col items-center">
+              
+              <!-- Bamboo Sticks inside cylinder -->
+              <div class="relative w-20 h-24 flex items-end justify-center space-x-1 mb-[-4px]">
+                <!-- Stick 1 -->
+                <div class="w-2.5 h-16 bg-gradient-to-t from-amber-700 to-amber-400 rounded-t-sm animate-stick-a border-t-2 border-red-500 shadow-sm"></div>
+                <!-- Stick 2 -->
+                <div class="w-2.5 h-20 bg-gradient-to-t from-amber-700 to-amber-300 rounded-t-sm animate-stick-b border-t-2 border-red-500 shadow-sm"></div>
+                <!-- Stick 3 (Target Rising Stick) -->
+                <div id="anim-rising-stick" class="w-3.5 h-24 bg-gradient-to-t from-amber-600 via-amber-300 to-yellow-100 rounded-t-sm border-t-4 border-amber-400 shadow-lg relative z-20">
+                  <span class="absolute top-1 left-0.5 right-0.5 text-[8px] text-amber-950 font-serif font-bold text-center leading-none">靈</span>
+                </div>
+                <!-- Stick 4 -->
+                <div class="w-2.5 h-18 bg-gradient-to-t from-amber-700 to-amber-300 rounded-t-sm animate-stick-c border-t-2 border-red-500 shadow-sm"></div>
+                <!-- Stick 5 -->
+                <div class="w-2.5 h-14 bg-gradient-to-t from-amber-700 to-amber-400 rounded-t-sm animate-stick-a border-t-2 border-red-500 shadow-sm"></div>
+              </div>
+
+              <!-- Bamboo Cylinder Body -->
+              <div class="w-24 h-28 bg-gradient-to-b from-amber-800 via-amber-900 to-yellow-950 rounded-b-2xl rounded-t-md border-2 border-amber-500/60 shadow-xl relative overflow-hidden flex flex-col items-center justify-between p-2">
+                <div class="w-full h-1.5 bg-amber-500/40 rounded-full"></div>
+                <div class="w-10 h-12 rounded-lg border border-amber-500/40 bg-slate-950/60 flex items-center justify-center">
+                  <span class="text-xs font-serif font-bold text-amber-300 tracking-wider poem-vertical">靈籤</span>
+                </div>
+                <div class="w-full h-1.5 bg-amber-500/40 rounded-full"></div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <h3 id="anim-cylinder-title" class="text-base sm:text-lg font-bold text-amber-300 font-serif">
+              ⛩️ 誠心向神明祈請，籤筒搖動感應中...
+            </h3>
+            <p class="text-xs text-slate-400">凝聚個人專注與心念，機緣籤支即將浮現</p>
+          </div>
+        </div>
+
+        <!-- STAGE 2: 擲筊請示 (Bwa Bwei Moon Blocks) -->
+        <div id="anim-stage-bwa" class="hidden space-y-6">
+          <div class="relative w-48 h-36 mx-auto flex items-center justify-center gap-6">
+            <!-- Glow background -->
+            <div class="absolute inset-0 bg-amber-500/15 rounded-full blur-xl animate-pulse"></div>
+
+            <!-- Left Moon Block (凸面 / 陰) -->
+            <div class="animate-bwa-left z-10 flex flex-col items-center">
+              <svg width="72" height="72" viewBox="0 0 100 100" class="drop-shadow-[0_8px_16px_rgba(225,29,72,0.5)]">
+                <!-- Red curved crescent back (convex) -->
+                <path d="M 20,50 C 20,20 80,20 80,50 C 70,35 30,35 20,50 Z" fill="url(#redWoodConvex)" stroke="#881337" stroke-width="2"/>
+                <defs>
+                  <linearGradient id="redWoodConvex" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f43f5e"/>
+                    <stop offset="50%" stop-color="#be123c"/>
+                    <stop offset="100%" stop-color="#881337"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="text-[10px] font-serif text-rose-300 font-semibold mt-1">凸面（俯）</span>
+            </div>
+
+            <!-- Right Moon Block (平面 / 陽) -->
+            <div class="animate-bwa-right z-10 flex flex-col items-center">
+              <svg width="72" height="72" viewBox="0 0 100 100" class="drop-shadow-[0_8px_16px_rgba(245,158,11,0.5)]">
+                <!-- Flat inner surface of crescent -->
+                <path d="M 20,50 C 20,20 80,20 80,50 C 65,55 35,55 20,50 Z" fill="url(#redWoodFlat)" stroke="#b45309" stroke-width="2"/>
+                <defs>
+                  <linearGradient id="redWoodFlat" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fbbf24"/>
+                    <stop offset="50%" stop-color="#d97706"/>
+                    <stop offset="100%" stop-color="#92400e"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="text-[10px] font-serif text-amber-300 font-semibold mt-1">平面（仰）</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-serif font-bold">
+              <i class="fa-solid fa-sparkles text-amber-300"></i>
+              <span>聖筊應允 ｜ 神明賜籤確認</span>
+            </div>
+            <h3 id="anim-bwa-title" class="text-base sm:text-lg font-bold text-amber-200 font-serif">
+              一陰一陽・大吉聖筊！神明應允賜籤
+            </h3>
+            <p id="anim-bwa-lotname" class="text-xs text-amber-400 font-mono">第 1 籤 甲子</p>
+          </div>
+        </div>
+
+        <!-- STAGE 3: AI 心理學深度剖析 (AI Cognitive Interpretation & Framing) -->
+        <div id="anim-stage-ai" class="hidden space-y-6 max-w-md mx-auto">
+          <!-- Central Wisdom Orb & Mandalas -->
+          <div class="relative w-28 h-28 mx-auto flex items-center justify-center">
+            <!-- Outer spinning ring -->
+            <div class="absolute inset-0 rounded-full border-2 border-dashed border-amber-500/40 animate-spin-slow"></div>
+            <!-- Inner reverse spinning ring -->
+            <div class="absolute inset-2 rounded-full border border-purple-500/50 animate-spin-reverse-slow"></div>
+            <!-- Center Wisdom Orb -->
+            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 via-purple-600 to-amber-300 animate-wisdom-orb flex items-center justify-center text-slate-950 text-2xl shadow-xl shadow-amber-500/30">
+              <i class="fa-solid fa-wand-magic-sparkles text-slate-950"></i>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h3 id="anim-ai-title" class="text-base font-bold text-amber-300 font-serif">
+              🔮 正在結合認知心理學進行思維再架構...
+            </h3>
+            <p class="text-xs text-slate-400">
+              將傳統籤意轉化為賦權處境洞察與具體行動方案
+            </p>
+          </div>
+
+          <!-- 3-Step Dynamic Progress Stepper -->
+          <div class="grid grid-cols-3 gap-2 text-left pt-2">
+            <!-- Step 1 -->
+            <div id="anim-step-1" class="p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/50 text-xs space-y-1 transition-all">
+              <div class="flex items-center gap-1.5 text-amber-400 font-bold">
+                <i id="anim-step-1-icon" class="fa-solid fa-circle-check text-xs"></i>
+                <span>籤文檢索</span>
+              </div>
+              <p class="text-[10px] text-slate-400 leading-tight">古籍歷史典故</p>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="anim-step-2" class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs space-y-1 transition-all">
+              <div class="flex items-center gap-1.5 text-slate-400 font-bold" id="anim-step-2-head">
+                <i id="anim-step-2-icon" class="fa-solid fa-circle-notch animate-spin text-xs"></i>
+                <span>處境投射</span>
+              </div>
+              <p class="text-[10px] text-slate-400 leading-tight">認知盲點剖析</p>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="anim-step-3" class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs space-y-1 transition-all">
+              <div class="flex items-center gap-1.5 text-slate-500 font-bold" id="anim-step-3-head">
+                <i id="anim-step-3-icon" class="fa-regular fa-circle text-xs"></i>
+                <span>行動指引</span>
+              </div>
+              <p class="text-[10px] text-slate-500 leading-tight">Do's & Don'ts</p>
+            </div>
+          </div>
+
+          <!-- Shimmer Progress Bar -->
+          <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+            <div class="h-full shimmer-progress w-full rounded-full"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Error State -->
+      <div id="prayer-error-state" class="hidden bg-rose-950/40 border border-rose-800 text-rose-200 rounded-2xl p-5 my-6 flex items-start gap-3">
+        <i class="fa-solid fa-circle-exclamation text-rose-400 mt-1"></i>
+        <div>
+          <h4 class="font-semibold text-sm">解析過程發生異常</h4>
+          <p id="prayer-error-message" class="text-xs mt-1 text-rose-300"></p>
+        </div>
+      </div>
+
+      <!-- Result Section -->
+      <div id="prayer-result-section" class="hidden space-y-6">
+        
+        <!-- Top Bar Actions -->
+        <div class="flex items-center justify-between stagger-in-1">
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <i class="fa-solid fa-check-circle text-emerald-400"></i>
+            <span>解籤完成 ｜ 抽籤紀錄已安全存入 SQLite 資料庫</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="copyResult()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer">
+              <i class="fa-regular fa-copy"></i>
+              <span id="copy-text">複製解析</span>
+            </button>
+            <button onclick="resetPrayerDraw()" class="px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer">
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>再次請教</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Result Card: Fortune Card + Psychological Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+          <!-- Left: Poem & Story Card -->
+          <div class="md:col-span-5 bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-2xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden stagger-in-1">
+            <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div>
+              <div class="mb-2">
+                <span id="res-lot-system" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-amber-400 border border-slate-700 font-sans">六十甲子籤</span>
+              </div>
+
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <span id="res-lot-name" class="font-serif text-lg font-bold text-amber-300">第一籤 甲子</span>
+                <span id="res-lot-grade" class="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-serif font-bold">大吉</span>
+              </div>
+
+              <!-- Poem Content Display (Traditional look) -->
+              <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5 my-4 text-center">
+                <pre id="res-lot-content" class="font-serif text-base sm:text-lg leading-relaxed text-slate-200 whitespace-pre-line tracking-widest font-medium"></pre>
+              </div>
+
+              <!-- Historical Story -->
+              <div class="mt-4 bg-slate-900/60 rounded-xl p-3.5 border border-slate-800">
+                <h5 class="text-xs font-semibold text-amber-400 flex items-center gap-1.5 mb-1">
+                  <i class="fa-solid fa-book-open"></i>
+                  典故歷史
+                </h5>
+                <p id="res-lot-story" class="text-xs text-slate-300 leading-relaxed"></p>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-500 text-center font-mono">
+              Draw Record ID: <span id="res-draw-id" class="text-slate-400">N/A</span>
+            </div>
+          </div>
+
+          <!-- Right: AI Insight & Action Guide -->
+          <div class="md:col-span-7 space-y-4">
+
+            <!-- 1. 白話轉譯 -->
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-500 stagger-in-2">
+              <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-2 font-serif">
+                <i class="fa-solid fa-feather-pointed text-amber-400"></i>
+                籤意白話解析
+              </h4>
+              <p id="res-poem-interpretation" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- 2. 典故啟示與處境剖析 -->
+            <div class="glass-card rounded-2xl p-5 space-y-4 stagger-in-3">
+              <div>
+                <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-1.5 font-serif">
+                  <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                  典故心理學啟發
+                </h4>
+                <p id="res-story-inspiration" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+              </div>
+
+              <div class="pt-3 border-t border-slate-800">
+                <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-1.5 font-serif">
+                  <i class="fa-solid fa-crosshairs text-sky-400"></i>
+                  針對您當前處境的洞察
+                </h4>
+                <p id="res-situation-analysis" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+              </div>
+            </div>
+
+            <!-- 3. 行動指引 (Do's & Don'ts) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-in-4">
+              <!-- Do's -->
+              <div class="bg-emerald-950/30 border border-emerald-800/50 rounded-xl p-4">
+                <h5 class="text-xs font-bold text-emerald-400 flex items-center gap-1.5 mb-2.5">
+                  <i class="fa-solid fa-circle-check"></i>
+                  建議採取的行動 (Do's)
+                </h5>
+                <ul id="res-dos-list" class="space-y-1.5 text-xs text-slate-300 list-disc list-inside"></ul>
+              </div>
+
+              <!-- Don'ts -->
+              <div class="bg-rose-950/30 border border-rose-800/50 rounded-xl p-4">
+                <h5 class="text-xs font-bold text-rose-400 flex items-center gap-1.5 mb-2.5">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  應避免的盲點 (Don'ts)
+                </h5>
+                <ul id="res-donts-list" class="space-y-1.5 text-xs text-slate-300 list-disc list-inside"></ul>
+              </div>
+            </div>
+
+            <!-- 4. 溫暖陪伴結語 -->
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-950/20 to-slate-900 stagger-in-4">
+              <h4 class="text-sm font-bold text-purple-300 flex items-center gap-2 mb-2 font-serif">
+                <i class="fa-solid fa-heart-pulse text-purple-400"></i>
+                心靈陪伴與賦權結語
+              </h4>
+              <p id="res-encouragement" class="text-xs sm:text-sm text-slate-300 leading-relaxed italic"></p>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: 「📖 靈籤寶典」專屬分頁 (Poem Library & Direct Lookup View) -->
+    <!-- ========================================================================= -->
+    <div id="view-library" class="main-view hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-5 mb-6 border-b border-slate-800">
+          <div>
+            <h3 class="text-lg font-bold font-serif text-amber-300 flex items-center gap-2">
+              <i class="fa-solid fa-book-journal-whills text-amber-400"></i>
+              靈籤寶典 ｜ 260 首全本典藏檢索
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">從三大籤詩系統中直接挑選或搜尋特定靈籤，查閱全文並進行客製化解籤。</p>
+          </div>
+        </div>
+
+        <!-- System Switcher for Library -->
+        <div class="mb-6">
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
+            選擇檢索之籤詩系統：
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button 
+              type="button" 
+              onclick="selectLibrarySystem('60_jiazi', 60, '六十甲子籤')"
+              id="lib-sys-60_jiazi"
+              class="lib-sys-btn system-tab-active flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-700 bg-slate-900/80 hover:border-amber-500/50 transition cursor-pointer text-center group"
+            >
+              <span>⛩️</span>
+              <span class="text-xs sm:text-sm font-bold font-serif text-slate-100 group-hover:text-amber-400">六十甲子籤 (60首)</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="selectLibrarySystem('guandi_100', 100, '關聖帝君一百籤')"
+              id="lib-sys-guandi_100"
+              class="lib-sys-btn flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500/50 transition cursor-pointer text-center group text-slate-400 hover:text-slate-200"
+            >
+              <span>⚔️</span>
+              <span class="text-xs sm:text-sm font-bold font-serif text-slate-300 group-hover:text-amber-400">關聖帝君 (100首)</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="selectLibrarySystem('guanyin_100', 100, '觀音靈籤一百首')"
+              id="lib-sys-guanyin_100"
+              class="lib-sys-btn flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500/50 transition cursor-pointer text-center group text-slate-400 hover:text-slate-200"
+            >
+              <span>🪷</span>
+              <span class="text-xs sm:text-sm font-bold font-serif text-slate-300 group-hover:text-amber-400">觀音靈籤 (100首)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dropdown & Search Bar -->
+        <div class="space-y-4 mb-6">
+          <div>
+            <label for="library-lot-select" class="block text-xs font-semibold text-slate-300 mb-2">
+              📜 籤詩清單下拉選單：
+            </label>
+            <div class="relative">
+              <select 
+                id="library-lot-select" 
+                onchange="handleLibraryLotSelect(event)"
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition appearance-none pr-10 cursor-pointer"
+              >
+                <option value="">載入籤詩清單中...</option>
+              </select>
+              <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <i class="fa-solid fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Poem Display Card -->
+        <div id="library-poem-display" class="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <span id="lib-lot-sys-name" class="text-[11px] px-2.5 py-0.5 rounded bg-slate-800 text-amber-400 border border-slate-700">
+                六十甲子籤
+              </span>
+              <span id="lib-lot-name" class="text-base sm:text-lg font-serif font-bold text-amber-300">
+                第一籤 甲子
+              </span>
+            </div>
+            <span id="lib-lot-grade" class="px-3 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-serif font-bold">
+              大吉
+            </span>
+          </div>
+
+          <!-- Full Poem Typography -->
+          <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-800/80 text-center">
+            <pre id="lib-lot-content" class="font-serif text-base sm:text-lg leading-relaxed text-slate-100 whitespace-pre-line tracking-widest font-medium"></pre>
+          </div>
+
+          <!-- Story Details -->
+          <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800/60">
+            <h5 class="text-xs font-bold text-amber-400 flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-book-open"></i>
+              歷史典故
+            </h5>
+            <p id="lib-lot-story" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
+            <button 
+              type="button" 
+              onclick="applyLibraryLotToPrayer()" 
+              class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+            >
+              <i class="fa-solid fa-hands-praying"></i>
+              <span>以此籤帶入祈禱室深度請益</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="copyLibraryPoem()" 
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <i class="fa-regular fa-copy"></i>
+              <span id="lib-copy-text">複製籤文</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 space-y-2">
+      <p>© 2026 心靈解籤伴侶 SoulGuanYin ｜ 弘揚傳統籤詩文化與現代心理學關懷</p>
+      <div class="flex items-center justify-center gap-4 text-[11px] text-slate-600">
+        <span>本系統純屬心靈啟發、認知轉念與自我反思之輔助工具</span>
+        <span>•</span>
+        <button type="button" onclick="openAdminModal()" class="hover:text-amber-400 transition cursor-pointer underline">
+          ⚙️ 設計者/管理者後台
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: 「設計者與管理者設定控制台」 (Admin Modal) -->
+  <!-- ========================================================================= -->
+  <div id="admin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-slate-900 border border-amber-500/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden relative">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div class="flex items-center gap-2.5 text-amber-300 font-serif font-bold text-base">
+          <i class="fa-solid fa-sliders text-amber-400"></i>
+          <span>設計者與管理者控制台</span>
+        </div>
+        <button type="button" onclick="closeAdminModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+        
+        <!-- 1. AI Model Selection Section -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            🎛️ 全站預設解籤 AI 模型切換：
+          </label>
+          <select 
+            id="admin-model-select"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-xs sm:text-sm text-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition cursor-pointer"
+          >
+            <option value="gemini-3.1-flash-lite-preview">✨ Gemini 3.1 Flash-Lite Preview (推薦・極速)</option>
+            <option value="gemini-3.1-pro-preview">🧠 Gemini 3.1 Pro Preview (深度推理)</option>
+            <option value="gemini-3-flash-preview">⚡ Gemini 3 Flash Preview (旗艦閃速)</option>
+            <option value="gpt-4o">🌟 GPT-4o (OpenAI 旗艦)</option>
+            <option value="gpt-4o-mini">🚀 GPT-4o mini (OpenAI 輕量)</option>
+          </select>
+          <p id="admin-model-desc" class="text-[11px] text-slate-400 mt-1.5 leading-relaxed"></p>
+        </div>
+
+        <!-- 2. Test Connection Button & Status Feedback -->
+        <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-300">📡 API 連線與延遲檢測：</span>
+            <button 
+              type="button" 
+              onclick="testModelConnection()" 
+              id="admin-test-btn"
+              class="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <i class="fa-solid fa-bolt"></i>
+              <span>測試連線</span>
+            </button>
+          </div>
+          <div id="admin-test-result" class="text-xs text-slate-400 min-h-[20px] flex items-center gap-1.5">
+            <span class="text-slate-500">點擊「測試連線」驗證目前選定模型的 API 回應狀態。</span>
+          </div>
+        </div>
+
+        <!-- 3. System & Database Health Stats -->
+        <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/80 space-y-2 text-xs">
+          <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">系統即時監控資訊：</h5>
+          <div class="flex items-center justify-between text-slate-300">
+            <span class="text-slate-400">SQLite 籤詩資料庫：</span>
+            <span class="text-emerald-400 font-mono flex items-center gap-1"><i class="fa-solid fa-circle-check text-[10px]"></i> 已連線 (260 首全本)</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-300">
+            <span class="text-slate-400">目前執行時期主力模型：</span>
+            <span id="admin-active-model-display" class="text-amber-300 font-mono font-bold">gemini-3.1-flash-lite-preview</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-300">
+            <span class="text-slate-400">安全金鑰狀態：</span>
+            <span class="text-emerald-400 font-mono">已配置 (Google Gemini)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 bg-slate-950/80 border-t border-slate-800 flex items-center justify-end gap-3">
+        <button 
+          type="button" 
+          onclick="closeAdminModal()" 
+          class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+        >
+          取消
+        </button>
+        <button 
+          type="button" 
+          onclick="saveAdminModel()" 
+          id="admin-save-btn"
+          class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition cursor-pointer shadow-md flex items-center gap-1.5"
+        >
+          <i class="fa-solid fa-check"></i>
+          <span>儲存並套用模型</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // State Variables
+    let currentResultData = null;
+    let currentSystemDefaultModel = "gemini-3.1-flash-lite-preview";
+    let modelsCatalog = [];
+    
+    // Prayer Tab State
+    let selectedPrayerLotType = "60_jiazi";
+    let currentPrayerMaxLots = 60;
+    let selectedPrayerLotTypeName = "六十甲子籤";
+    let presetPrayerLotNumber = null;
+    
+    // Library Tab State
+    let selectedLibLotType = "60_jiazi";
+    let currentLibMaxLots = 60;
+    let selectedLibLotTypeName = "六十甲子籤";
+    let currentSelectedLibLot = null;
+
+    // Daily Lot State
+    let currentDailySystem = "60_jiazi";
+    let currentDailyData = null;
+
+    // Global Lots Cache per system
+    const lotsCache = {};
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      initDateDisplay();
+      loadAdminConfig();
+      loadDailyLot(currentDailySystem);
+      loadLotsForSystem('60_jiazi');
+    });
+
+    function initDateDisplay() {
+      const today = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+      const dateStr = today.toLocaleDateString('zh-TW', options);
+      const displayElem = document.getElementById('daily-date-display');
+      if (displayElem) {
+        displayElem.innerText = `${dateStr} ｜ 宜・誠正靜慮`;
+      }
+    }
+
+    // =========================================================================
+    // 管理者後台 (Admin Panel Logic)
+    // =========================================================================
+    async function loadAdminConfig() {
+      try {
+        const response = await fetch('/api/models');
+        const data = await response.json();
+        if (data.success) {
+          currentSystemDefaultModel = data.current_default;
+          modelsCatalog = data.models || [];
+          
+          const adminSelect = document.getElementById('admin-model-select');
+          if (adminSelect && modelsCatalog.length > 0) {
+            adminSelect.innerHTML = '';
+            modelsCatalog.forEach(m => {
+              const opt = document.createElement('option');
+              opt.value = m.id;
+              opt.textContent = `${m.name} (${m.badge || m.provider})`;
+              if (m.id === currentSystemDefaultModel) {
+                opt.selected = true;
+              }
+              adminSelect.appendChild(opt);
+            });
+            updateAdminModelDesc();
+          }
+          
+          const activeDisplay = document.getElementById('admin-active-model-display');
+          if (activeDisplay) {
+            activeDisplay.innerText = currentSystemDefaultModel;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching admin config:', err);
+      }
+    }
+
+    function updateAdminModelDesc() {
+      const adminSelect = document.getElementById('admin-model-select');
+      const descElem = document.getElementById('admin-model-desc');
+      if (adminSelect && descElem) {
+        const currentM = modelsCatalog.find(m => m.id === adminSelect.value);
+        descElem.innerText = currentM ? `說明：${currentM.description}` : '';
+      }
+    }
+
+    document.getElementById('admin-model-select')?.addEventListener('change', updateAdminModelDesc);
+
+    function openAdminModal() {
+      loadAdminConfig();
+      document.getElementById('admin-modal').classList.remove('hidden');
+    }
+
+    function closeAdminModal() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    async function saveAdminModel() {
+      const adminSelect = document.getElementById('admin-model-select');
+      const selectedModel = adminSelect.value;
+      const saveBtn = document.getElementById('admin-save-btn');
+      
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> 儲存中...';
+
+      try {
+        const response = await fetch('/api/admin/set_model', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: selectedModel })
+        });
+        const data = await response.json();
+        if (data.success) {
+          currentSystemDefaultModel = data.active_model;
+          document.getElementById('admin-active-model-display').innerText = currentSystemDefaultModel;
+          alert(`全站預設 AI 模型已切換為：${currentSystemDefaultModel}`);
+          closeAdminModal();
+        } else {
+          alert('設定失敗，請檢查後端日誌');
+        }
+      } catch (err) {
+        alert(`設定錯誤: ${err.message}`);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 儲存並套用模型';
+      }
+    }
+
+    async function testModelConnection() {
+      const adminSelect = document.getElementById('admin-model-select');
+      const targetModel = adminSelect.value;
+      const testBtn = document.getElementById('admin-test-btn');
+      const resultElem = document.getElementById('admin-test-result');
+
+      testBtn.disabled = true;
+      testBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> 測試中...';
+      resultElem.innerHTML = '<span class="text-amber-300 animate-pulse">正在向模型端點發送 Ping 請求...</span>';
+
+      try {
+        const response = await fetch('/api/admin/test_connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: targetModel })
+        });
+        const data = await response.json();
+        if (data.success) {
+          resultElem.innerHTML = `<span class="text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> ${data.message}</span>`;
+        } else {
+          resultElem.innerHTML = `<span class="text-rose-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> ${data.message}</span>`;
+        }
+      } catch (err) {
+        resultElem.innerHTML = `<span class="text-rose-400">測試連線異常: ${err.message}</span>`;
+      } finally {
+        testBtn.disabled = false;
+        testBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> 測試連線';
+      }
+    }
+
+    // =========================================================================
+    // 頂層主功能 Tab 切換 (switchMainTab)
+    // =========================================================================
+    function switchMainTab(tabId) {
+      document.querySelectorAll('.main-tab-btn').forEach(btn => {
+        btn.classList.remove('main-tab-active', 'text-amber-300');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeBtn = document.getElementById(`main-tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('main-tab-active');
+        activeBtn.classList.remove('text-slate-400');
+      }
+
+      document.querySelectorAll('.main-view').forEach(v => v.classList.add('hidden'));
+      const targetView = document.getElementById(`view-${tabId}`);
+      if (targetView) {
+        targetView.classList.remove('hidden');
+      }
+
+      if (tabId === 'library') {
+        loadLibraryLots(selectedLibLotType);
+      }
+
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // 📅 TAB 1: 每日一籤 (Daily Fortune) 邏輯
+    // =========================================================================
+    function getLocalDateString() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getClientUserId() {
+      let uid = localStorage.getItem('temple_client_uid');
+      if (!uid) {
+        uid = 'user_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+        localStorage.setItem('temple_client_uid', uid);
+      }
+      return uid;
+    }
+
+    async function switchDailySystem(systemId) {
+      currentDailySystem = systemId;
+      
+      document.querySelectorAll('.daily-tab-btn').forEach(btn => {
+        btn.classList.remove('daily-tab-active', 'text-slate-300', 'text-amber-200');
+        btn.classList.add('text-slate-400');
+      });
+      const activeBtn = document.getElementById(`daily-tab-${systemId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('daily-tab-active');
+        activeBtn.classList.remove('text-slate-400');
+      }
+
+      await loadDailyLot(systemId);
+    }
+
+    async function loadDailyLot(systemId, redrawCount = null) {
+      try {
+        const todayStr = getLocalDateString();
+        const userId = getClientUserId();
+        
+        const redrawKey = `daily_lot_redraw_${todayStr}_${systemId}`;
+        if (redrawCount === null) {
+          const savedRedraw = localStorage.getItem(redrawKey);
+          redrawCount = savedRedraw ? parseInt(savedRedraw, 10) || 0 : 0;
+        } else {
+          localStorage.setItem(redrawKey, String(redrawCount));
+        }
+
+        const response = await fetch(`/api/daily_lot?lot_type=${systemId}&date_str=${todayStr}&user_id=${encodeURIComponent(userId)}&redraw_index=${redrawCount}`);
+        const data = await response.json();
+        if (data.success) {
+          currentDailyData = data;
+          
+          const storageKey = `daily_lot_revealed_${todayStr}_${systemId}`;
+          const isRevealed = localStorage.getItem(storageKey);
+          
+          if (isRevealed === 'true') {
+            displayDailyLot(data);
+          } else {
+            showUnrevealedDaily();
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching daily lot:', err);
+      }
+    }
+
+    function showUnrevealedDaily() {
+      document.getElementById('daily-unrevealed-view').classList.remove('hidden');
+      document.getElementById('daily-revealed-view').classList.add('hidden');
+    }
+
+    function revealDailyLot() {
+      if (!currentDailyData) return;
+      const todayStr = getLocalDateString();
+      const storageKey = `daily_lot_revealed_${todayStr}_${currentDailySystem}`;
+      localStorage.setItem(storageKey, 'true');
+      displayDailyLot(currentDailyData);
+    }
+
+    function reflipDailyLot() {
+      const todayStr = getLocalDateString();
+      const storageKey = `daily_lot_revealed_${todayStr}_${currentDailySystem}`;
+      localStorage.removeItem(storageKey);
+      showUnrevealedDaily();
+    }
+
+    async function redrawDailyLot() {
+      const btn = document.getElementById('daily-redraw-btn');
+      const icon = document.getElementById('daily-redraw-icon');
+      if (btn) btn.disabled = true;
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const todayStr = getLocalDateString();
+        const redrawKey = `daily_lot_redraw_${todayStr}_${currentDailySystem}`;
+        const savedRedraw = localStorage.getItem(redrawKey);
+        const newRedrawCount = (savedRedraw ? parseInt(savedRedraw, 10) || 0 : 0) + 1;
+
+        await loadDailyLot(currentDailySystem, newRedrawCount);
+        
+        const storageKey = `daily_lot_revealed_${todayStr}_${currentDailySystem}`;
+        localStorage.setItem(storageKey, 'true');
+        if (currentDailyData) {
+          displayDailyLot(currentDailyData);
+        }
+
+        const revealedCard = document.getElementById('daily-revealed-view');
+        if (revealedCard) {
+          revealedCard.classList.remove('animate-flip');
+          void revealedCard.offsetWidth; // force DOM reflow for CSS animation
+          revealedCard.classList.add('animate-flip');
+        }
+      } catch (err) {
+        console.error('Error redrawing daily lot:', err);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    function displayDailyLot(data) {
+      const { lot, daily_focus, lot_type_name, redraw_index } = data;
+      
+      document.getElementById('daily-lot-system-badge').innerText = lot_type_name || lot.lot_type_name;
+      document.getElementById('daily-lot-title').innerText = `${lot.lot_name}`;
+      document.getElementById('daily-lot-grade').innerText = lot.grade;
+      document.getElementById('daily-lot-content').innerText = lot.content;
+      document.getElementById('daily-lot-story').innerText = `典故：${lot.story}`;
+      document.getElementById('daily-lot-quote').innerText = `「${daily_focus || '守持正念，順應機緣，每一步探索都在為生命蓄積深厚力量。'}」`;
+
+      const metaBadge = document.getElementById('daily-lot-meta-badge');
+      if (metaBadge) {
+        if (redraw_index && redraw_index > 0) {
+          metaBadge.innerText = `✨ 第 ${redraw_index + 1} 次機緣感應`;
+          metaBadge.classList.remove('hidden');
+        } else {
+          metaBadge.innerText = '✨ 今日專屬初感應';
+          metaBadge.classList.remove('hidden');
+        }
+      }
+
+      document.getElementById('daily-unrevealed-view').classList.add('hidden');
+      const revealedView = document.getElementById('daily-revealed-view');
+      revealedView.classList.remove('hidden');
+    }
+
+    function applyDailyToPrayer() {
+      if (!currentDailyData || !currentDailyData.lot) return;
+      
+      const { lot_type, lot_number, lot } = currentDailyData;
+      
+      switchMainTab('prayer');
+      
+      const maxLots = lot_type === '60_jiazi' ? 60 : 100;
+      const name = lot_type === '60_jiazi' ? '六十甲子籤' : (lot_type === 'guandi_100' ? '關聖帝君一百籤' : '觀音靈籤一百首');
+      selectPrayerSystem(lot_type, maxLots, name);
+      
+      presetPrayerLotNumber = lot_number;
+      const badge = document.getElementById('prayer-preset-lot-badge');
+      const label = document.getElementById('preset-lot-name-display');
+      label.innerText = `${lot.lot_name} (第 ${lot_number} 籤)`;
+      badge.classList.remove('hidden');
+
+      const qBox = document.getElementById('prayer-question');
+      if (qBox) {
+        qBox.focus();
+      }
+    }
+
+    function copyDailyPoem() {
+      if (!currentDailyData || !currentDailyData.lot) return;
+      const { lot, daily_focus, lot_type_name } = currentDailyData;
+      const text = `【心靈解籤伴侶 ｜ 📅 今日專屬靈籤】
+系統：${lot_type_name}
+籤號：${lot.lot_name} (${lot.grade})
+籤詩原文：
+${lot.content}
+
+典故歷史：${lot.story}
+
+🌟 今日一日一悟：
+${daily_focus}
+`;
+      navigator.clipboard.writeText(text).then(() => {
+        const btnText = document.getElementById('daily-copy-btn-text');
+        btnText.innerText = '已複製！';
+        setTimeout(() => {
+          btnText.innerText = '複製籤文';
+        }, 2000);
+      });
+    }
+
+    // =========================================================================
+    // 🙏 TAB 2: 祈禱抽籤 (Prayer & Divination) 邏輯
+    // =========================================================================
+    function selectPrayerSystem(systemId, maxLots, name) {
+      selectedPrayerLotType = systemId;
+      currentPrayerMaxLots = maxLots;
+      selectedPrayerLotTypeName = name;
+
+      document.querySelectorAll('.prayer-sys-btn').forEach(btn => {
+        btn.classList.remove('system-tab-active');
+        btn.classList.add('border-slate-800', 'text-slate-400');
+      });
+
+      const activeBtn = document.getElementById(`prayer-sys-${systemId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('system-tab-active');
+        activeBtn.classList.remove('border-slate-800', 'text-slate-400');
+      }
+    }
+
+    function clearPresetLot() {
+      presetPrayerLotNumber = null;
+      document.getElementById('prayer-preset-lot-badge').classList.add('hidden');
+    }
+
+    function setPrayerSampleQuestion(text) {
+      document.getElementById('prayer-question').value = text;
+      document.getElementById('prayer-question').focus();
+    }
+
+    function resetPrayerDraw() {
+      document.getElementById('prayer-result-section').classList.add('hidden');
+      document.getElementById('prayer-draw-card').classList.remove('hidden');
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    async function handlePrayerSubmit(e) {
+      e.preventDefault();
+      
+      const question = document.getElementById('prayer-question').value.trim();
+      
+      if (!question) {
+        alert('請先輸入您的問題或當下困境');
+        return;
+      }
+
+      let lotNumber = presetPrayerLotNumber;
+      if (!lotNumber || isNaN(lotNumber)) {
+        lotNumber = Math.floor(Math.random() * currentPrayerMaxLots) + 1;
+      }
+
+      // UI 狀態切換
+      const loadingContainer = document.getElementById('prayer-loading-state');
+      const stageCylinder = document.getElementById('anim-stage-cylinder');
+      const stageBwa = document.getElementById('anim-stage-bwa');
+      const stageAi = document.getElementById('anim-stage-ai');
+      const risingStick = document.getElementById('anim-rising-stick');
+      
+      document.getElementById('prayer-draw-card').classList.add('hidden');
+      document.getElementById('prayer-error-state').classList.add('hidden');
+      document.getElementById('prayer-result-section').classList.add('hidden');
+      loadingContainer.classList.remove('hidden');
+      document.getElementById('prayer-submit-btn').disabled = true;
+
+      // 重置各動畫階段至初始
+      stageCylinder.classList.remove('hidden');
+      stageBwa.classList.add('hidden');
+      stageAi.classList.add('hidden');
+      risingStick.classList.remove('animate-stick-rise');
+
+      // 重置 Stepper 樣式
+      const step2 = document.getElementById('anim-step-2');
+      const step3 = document.getElementById('anim-step-3');
+      if (step2) {
+        step2.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs space-y-1 transition-all';
+        document.getElementById('anim-step-2-head').className = 'flex items-center gap-1.5 text-slate-400 font-bold';
+        document.getElementById('anim-step-2-icon').className = 'fa-solid fa-circle-notch animate-spin text-xs';
+      }
+      if (step3) {
+        step3.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs space-y-1 transition-all';
+        document.getElementById('anim-step-3-head').className = 'flex items-center gap-1.5 text-slate-500 font-bold';
+        document.getElementById('anim-step-3-icon').className = 'fa-regular fa-circle text-xs';
+      }
+
+      document.getElementById('anim-cylinder-title').innerText = `⛩️ 正在向【${selectedPrayerLotTypeName}】誠心祈請，籤筒搖動感應中...`;
+
+      // 同步發起後端解籤 API 請求
+      const apiPromise = fetch('/api/interpret', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lot_type: selectedPrayerLotType,
+          lot_number: lotNumber,
+          user_question: question
+        })
+      }).then(async response => {
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({ detail: '網路或伺服器錯誤' }));
+          throw new Error(errData.detail || `HTTP Error ${response.status}`);
+        }
+        return response.json();
+      });
+
+      const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+      try {
+        // === STAGE 1: 籤筒搖動與抽籤 (1.7 秒) ===
+        await sleep(1000);
+        risingStick.classList.add('animate-stick-rise');
+        await sleep(700);
+
+        // === STAGE 2: 擲筊請示與聖筊確認 (1.5 秒) ===
+        stageCylinder.classList.add('hidden');
+        stageBwa.classList.remove('hidden');
+        document.getElementById('anim-bwa-lotname').innerText = `${selectedPrayerLotTypeName}・第 ${lotNumber} 籤`;
+        await sleep(1500);
+
+        // === STAGE 3: AI 心理學深度重構與解籤 ===
+        stageBwa.classList.add('hidden');
+        stageAi.classList.remove('hidden');
+
+        // 等待 API 完成
+        const data = await apiPromise;
+        currentResultData = data;
+
+        // 步進器依序點亮
+        await sleep(400);
+        if (step2) {
+          step2.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/50 text-xs space-y-1 transition-all';
+          document.getElementById('anim-step-2-head').className = 'flex items-center gap-1.5 text-amber-400 font-bold';
+          document.getElementById('anim-step-2-icon').className = 'fa-solid fa-circle-check text-xs text-amber-400';
+        }
+
+        await sleep(400);
+        if (step3) {
+          step3.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/50 text-xs space-y-1 transition-all';
+          document.getElementById('anim-step-3-head').className = 'flex items-center gap-1.5 text-emerald-400 font-bold';
+          document.getElementById('anim-step-3-icon').className = 'fa-solid fa-circle-check text-xs text-emerald-400';
+        }
+
+        await sleep(350);
+
+        // 渲染結果並展現階梯式進場
+        renderResult(data);
+        loadingContainer.classList.add('hidden');
+        document.getElementById('prayer-result-section').classList.remove('hidden');
+        window.scrollTo({ top: 120, behavior: 'smooth' });
+
+      } catch (err) {
+        console.error('Error during divination and interpretation:', err);
+        document.getElementById('prayer-error-message').innerText = err.message || '無法完成解析，請稍後再試';
+        document.getElementById('prayer-error-state').classList.remove('hidden');
+        document.getElementById('prayer-draw-card').classList.remove('hidden');
+        loadingContainer.classList.add('hidden');
+      } finally {
+        document.getElementById('prayer-submit-btn').disabled = false;
+      }
+    }
+
+    function renderResult(data) {
+      const { lot, analysis, draw_id } = data;
+
+      // 籤詩卡片
+      document.getElementById('res-lot-system').innerText = lot.lot_type_name || selectedPrayerLotTypeName;
+      document.getElementById('res-lot-name').innerText = lot.lot_name;
+      document.getElementById('res-lot-grade').innerText = lot.grade;
+      document.getElementById('res-lot-content').innerText = lot.content;
+      document.getElementById('res-lot-story').innerText = lot.story;
+      document.getElementById('res-draw-id').innerText = draw_id || 'Mock-Local-Session';
+
+      // AI 解析
+      document.getElementById('res-poem-interpretation').innerText = analysis.poem_interpretation;
+      document.getElementById('res-story-inspiration').innerText = analysis.story_inspiration;
+      document.getElementById('res-situation-analysis').innerText = analysis.situation_analysis;
+      document.getElementById('res-encouragement').innerText = analysis.encouragement;
+
+      // Do's List
+      const dosList = document.getElementById('res-dos-list');
+      dosList.innerHTML = '';
+      if (analysis.actions && analysis.actions.dos) {
+        analysis.actions.dos.forEach(item => {
+          const li = document.createElement('li');
+          li.innerText = item;
+          dosList.appendChild(li);
+        });
+      }
+
+      // Don'ts List
+      const dontsList = document.getElementById('res-donts-list');
+      dontsList.innerHTML = '';
+      if (analysis.actions && analysis.actions.donts) {
+        analysis.actions.donts.forEach(item => {
+          const li = document.createElement('li');
+          li.innerText = item;
+          dontsList.appendChild(li);
+        });
+      }
+
+      // 平滑滾動到結果
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    function copyResult() {
+      if (!currentResultData) return;
+      const { lot, analysis } = currentResultData;
+      const text = `【心靈解籤伴侶 ｜ 解籤報告】
+籤系：${lot.lot_type_name || selectedPrayerLotTypeName}
+籤號：${lot.lot_name} (${lot.grade})
+籤詩原文：
+${lot.content}
+典故：${lot.story}
+
+【白話籤意】：
+${analysis.poem_interpretation}
+
+【典故啟示】：
+${analysis.story_inspiration}
+
+【處境分析】：
+${analysis.situation_analysis}
+
+【行動指引】：
+✓ 建議採取 (Do's)：
+${analysis.actions.dos.map(d => `• ${d}`).join('\n')}
+
+✗ 應當避免 (Don'ts)：
+${analysis.actions.donts.map(d => `• ${d}`).join('\n')}
+
+【心靈陪伴結語】：
+${analysis.encouragement}
+`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const copyText = document.getElementById('copy-text');
+        copyText.innerText = '已複製！';
+        setTimeout(() => {
+          copyText.innerText = '複製解析';
+        }, 2000);
+      });
+    }
+
+    // =========================================================================
+    // 📖 TAB 3: 靈籤寶典 (Poem Library & Direct Lookup) 邏輯
+    // =========================================================================
+    async function selectLibrarySystem(systemId, maxLots, name) {
+      selectedLibLotType = systemId;
+      currentLibMaxLots = maxLots;
+      selectedLibLotTypeName = name;
+
+      document.querySelectorAll('.lib-sys-btn').forEach(btn => {
+        btn.classList.remove('system-tab-active');
+        btn.classList.add('border-slate-800', 'text-slate-400');
+      });
+
+      const activeBtn = document.getElementById(`lib-sys-${systemId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('system-tab-active');
+        activeBtn.classList.remove('border-slate-800', 'text-slate-400');
+      }
+
+      await loadLibraryLots(systemId);
+    }
+
+    async function loadLotsForSystem(systemId) {
+      if (lotsCache[systemId]) return lotsCache[systemId];
+      try {
+        const response = await fetch(`/api/lots?lot_type=${systemId}`);
+        const data = await response.json();
+        if (data.success && data.lots) {
+          lotsCache[systemId] = data.lots;
+          return data.lots;
+        }
+      } catch (err) {
+        console.error('Error fetching lots:', err);
+      }
+      return [];
+    }
+
+    async function loadLibraryLots(systemId) {
+      const selectElem = document.getElementById('library-lot-select');
+      selectElem.innerHTML = '<option value="">載入籤詩清單中...</option>';
+
+      const lots = await loadLotsForSystem(systemId);
+      selectElem.innerHTML = '';
+
+      lots.forEach((lot, idx) => {
+        const opt = document.createElement('option');
+        opt.value = lot.lot_number;
+        const firstLine = (lot.content || '').split('\n')[0].replace(/[，。]/g, '');
+        opt.textContent = `第 ${lot.lot_number} 籤 ${lot.lot_name} 【${lot.grade}】 - ${firstLine}`;
+        selectElem.appendChild(opt);
+      });
+
+      if (lots.length > 0) {
+        selectElem.value = lots[0].lot_number;
+        displayLibraryPoem(lots[0]);
+      }
+    }
+
+    function handleLibraryLotSelect(e) {
+      const lotNum = parseInt(e.target.value, 10);
+      const currentLots = lotsCache[selectedLibLotType] || [];
+      const lot = currentLots.find(l => l.lot_number === lotNum);
+      if (lot) {
+        displayLibraryPoem(lot);
+      }
+    }
+
+    function displayLibraryPoem(lot) {
+      currentSelectedLibLot = lot;
+      document.getElementById('lib-lot-sys-name').innerText = selectedLibLotTypeName;
+      document.getElementById('lib-lot-name').innerText = `${lot.lot_name} (第 ${lot.lot_number} 籤)`;
+      document.getElementById('lib-lot-grade').innerText = lot.grade;
+      document.getElementById('lib-lot-content').innerText = lot.content;
+      document.getElementById('lib-lot-story').innerText = lot.story;
+    }
+
+    function applyLibraryLotToPrayer() {
+      if (!currentSelectedLibLot) return;
+      
+      const lot = currentSelectedLibLot;
+      
+      switchMainTab('prayer');
+      
+      const maxLots = selectedLibLotType === '60_jiazi' ? 60 : 100;
+      selectPrayerSystem(selectedLibLotType, maxLots, selectedLibLotTypeName);
+      
+      presetPrayerLotNumber = lot.lot_number;
+      const badge = document.getElementById('prayer-preset-lot-badge');
+      const label = document.getElementById('preset-lot-name-display');
+      label.innerText = `${lot.lot_name} (第 ${lot.lot_number} 籤)`;
+      badge.classList.remove('hidden');
+
+      const qBox = document.getElementById('prayer-question');
+      if (qBox) {
+        qBox.focus();
+      }
+    }
+
+    function copyLibraryPoem() {
+      if (!currentSelectedLibLot) return;
+      const lot = currentSelectedLibLot;
+      const text = `【心靈解籤伴侶 ｜ 靈籤寶典】
+系統：${selectedLibLotTypeName}
+籤號：${lot.lot_name} (${lot.grade})
+籤詩原文：
+${lot.content}
+
+典故歷史：
+${lot.story}
+`;
+      navigator.clipboard.writeText(text).then(() => {
+        const btnText = document.getElementById('lib-copy-text');
+        btnText.innerText = '已複製！';
+        setTimeout(() => {
+          btnText.innerText = '複製籤文';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
