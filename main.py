@@ -257,11 +257,12 @@ class ActionGuide(BaseModel):
     donts: List[str] = Field(description="建議避免的盲點或心態 (Don'ts)")
 
 class StructuredAnalysis(BaseModel):
-    poem_interpretation: str = Field(description="籤意白話轉譯與核心意境")
-    story_inspiration: str = Field(description="典故故事與現代心理學啟示")
-    situation_analysis: str = Field(description="結合使用者問題的當下處境剖析")
-    actions: ActionGuide = Field(description="具體行動指南")
-    encouragement: str = Field(description="富有同理心與力量的溫暖結語")
+    direct_verdict: str = Field(description="【直白定調/是非解答】一句話超直白定調（如是非題直接給答案與機會機率，接地氣不繞圈子）")
+    poem_interpretation: str = Field(description="【籤詩大白話】把古文籤詩翻成現代年輕人一秒看懂的大白話")
+    story_inspiration: str = Field(description="【典故白話講】用現代白話說典故，講出核心道理")
+    situation_analysis: str = Field(description="【針對你這件事的剖析】直球切入使用者具體問的事情，給出實質分析")
+    actions: ActionGuide = Field(description="具體行動指南 (超具體的實操步驟 Do's & Don'ts)")
+    encouragement: str = Field(description="【為你打氣】像好友一樣親切、熱血、給力的打氣金句")
 
 class LotInfo(BaseModel):
     id: Optional[str] = None
@@ -352,44 +353,134 @@ def fetch_lot_from_db(lot_type: str, lot_number: int) -> LotInfo:
         story="傳統典故。寓意撥雲見日，循序漸進，守持正念。"
     )
 
+def build_smart_fallback_analysis(lot: LotInfo, user_question: str) -> StructuredAnalysis:
+    """生成直白、接地氣、針對提問的備用結構化解籤（無 API 或連線失敗時的優質備援）"""
+    q = user_question.lower()
+    is_positive = any(g in lot.grade for g in ["大吉", "上吉", "中吉", "上上", "吉", "大安"])
+    
+    # 判斷問題類型
+    if any(k in q for k in ["搶", "票", "門票", "演唱會", "買到", "bigbang"]):
+        if is_positive:
+            verdict = f"【直白解答】：大有機會！這支籤評等為「{lot.grade}」，代表時機與運氣都在你這邊。手速跟準備做好，搶到的勝率超高！"
+            sit = f"針對你想搶「{user_question}」：籤詩表示你目前的實力與運勢都到位了，現在最重要的是保持手感與專注，不要自己嚇自己。"
+            dos = [
+                "提早 10 分鐘登入售票系統，確認信用卡號與驗證碼填寫順暢。",
+                "找 2~3 位親友多台設備一起搶，提高成功機率。",
+                "對好標準時間（如中原標準時間），整點準時刷新。"
+            ]
+            donts = [
+                "切忌開太多分頁狂按 F5 導致被系統判定機器人封鎖 IP。",
+                "不要挑選特定座位猶豫太久，能進場就是勝利。",
+                "不要輕信非官方的黃牛或不明轉讓，避免受騙。"
+            ]
+        else:
+            verdict = f"【直白解答】：競爭非常激烈，需要全力備戰！籤詩評等為「{lot.grade}」，提醒你需要靠策略與朋友助攻，單打獨鬥可能較吃力。"
+            sit = f"針對你想搶「{user_question}」：這場搶票競爭很硬，單靠一個人可能容易手忙腳亂，一定要有備案策略。"
+            dos = [
+                "找朋友組隊多機分工搶票，分散風險。",
+                "事前先在其他場次練習搶票填表流程，熟悉系統節奏。",
+                "若第一時間沒搶到，留意主辦單位後續清票時段。"
+            ]
+            donts = [
+                "不要在網路不穩定的環境（如移動中或公用 WiFi）搶票。",
+                "不要過度焦慮而手抖輸錯驗證碼。",
+                "切勿急病亂投醫點擊不明買票連結。"
+            ]
+    elif any(k in q for k in ["轉職", "工作", "換工作", "離職", "跳槽", "面試", "升遷", "創業"]):
+        if is_positive:
+            verdict = f"【直白解答】：可以衝！這支籤是「{lot.grade}」，代表轉職或推進的好時機，新的機會將為你帶來突破！"
+            sit = f"針對你詢問的工作問題「{user_question}」：局勢正在好轉，你的能力已經累積足夠，該展現自信抓住機會。"
+            dos = [
+                "把履歷與作品集梳理到最佳狀態，主動投遞心儀職缺。",
+                "面試時大方展現過去實戰戰果與解決問題的能力。",
+                "跟產業內前輩或信任朋友多聊聊市場行情。"
+            ]
+            donts = [
+                "不要自我懷疑或因害怕失敗而不敢跨出舒適圈。",
+                "不要在還沒談妥待遇與合約前貿然裸辭。",
+                "不要被一時的話術吸引而忽略了公司的實際文化。"
+            ]
+        else:
+            verdict = f"【直白解答】：建議先穩住，暫時不要衝動換！籤詩評等為「{lot.grade}」，提示目前環境變數多，先蓄積實力為上策。"
+            sit = f"針對工作問題「{user_question}」：當前外部局勢尚不明朗，急著跳槽可能會跳入另一個坑，建議騎驢找馬、先充實自己。"
+            dos = [
+                "在現有崗位上把能學的技能與人脈拿到手。",
+                "暗中準備履歷與技能，等待更好的時機成熟。",
+                "多打聽目標行業的真實狀況與穩定度。"
+            ]
+            donts = [
+                "不要因為一時受氣就衝動提離職。",
+                "切忌在沒有下家 offer 的情況下裸辭。",
+                "不要忽視現有工作累積的信任資產。"
+            ]
+    else:
+        # 通用是非/決策題
+        if is_positive:
+            verdict = f"【直白解答】：答案偏向「是／正面肯定」！這是一張「{lot.grade}」的好籤，事情朝向順利方向發展，大膽往前走！"
+            sit = f"針對你所問的「{user_question}」：目前的阻礙正逐步散去，轉機就在眼前，只要照著計劃穩步推進即可。"
+            dos = [
+                "保持自信與行動力，把計畫落實到每一天的具體步驟。",
+                "主動爭取機會，不等待被動安排。",
+                "遇到問題及時跟身邊信任的夥伴溝通反饋。"
+            ]
+            donts = [
+                "不要前怕狼後怕虎、過度內耗猶豫不決。",
+                "不要聽信旁人無建設性的消極冷水。",
+                "不要在快要成功時鬆懈大意。"
+            ]
+        else:
+            verdict = f"【直白解答】：建議「先緩緩／謹慎評估」！這張籤評等為「{lot.grade}」，提示目前變數較多，先停看聽比硬衝更安全。"
+            sit = f"針對你所問的「{user_question}」：眼下可能有些隱藏的細節還沒看清楚，先冷靜梳理，不要急著做重大決定。"
+            dos = [
+                "先收集更多客觀資訊，把利弊清單寫下來分析。",
+                "給自己 2~3 天沉澱思考期，聽聽不同前輩的意見。",
+                "做好風險備案，預留轉圜空間。"
+            ]
+            donts = [
+                "不要在情緒激動或焦慮時做重大決策。",
+                "切忌急於求成而跳過必要的審查步驟。",
+                "不要忽視直覺中感覺不對勁的警訊。"
+            ]
+
+    clean_content = lot.content.replace("\n", " ")
+    poem_interp = f"這首籤詩（{lot.lot_name}・{lot.grade}）原文是「{clean_content}」。用現代白話說就是：『好時機即將到來，先前的準備與努力都在打底！只要你心意堅定、做好該做的準備，時間到了自然順理成章拿下！』"
+    story_insp = f"典故【{lot.story}】用白話講：就像高手出招，關鍵在於『快、準、穩』！不要猶豫不決，機會出現的瞬間全力出手就是致勝關鍵。"
+    encouragement = "別焦慮！神明已經給出方向，接下來就看你的行動了。相信自己的直覺與準備，放手去衝，好事自然發生！"
+
+    return StructuredAnalysis(
+        direct_verdict=verdict,
+        poem_interpretation=poem_interp,
+        story_inspiration=story_insp,
+        situation_analysis=sit,
+        actions=ActionGuide(dos=dos, donts=donts),
+        encouragement=encouragement
+    )
+
 def generate_ai_interpretation(lot: LotInfo, user_question: str, requested_model: Optional[str] = None) -> tuple[StructuredAnalysis, str]:
-    """呼叫指定 LLM (Gemini 3.1 / GPT-4o 等) 進行嚴謹心理學視角的結構化解籤"""
+    """呼叫指定 LLM (Gemini 3.1 / GPT-4o 等) 進行超直白、接地氣的現代青年結構化解籤"""
     target_model = requested_model or current_runtime_model
     client, model_id = get_llm_client(target_model)
     
     if not client:
         # Mock Response when API key is missing
         logger.info("Using Fallback Mock Interpretation Engine.")
-        analysis = StructuredAnalysis(
-            poem_interpretation=f"此籤（{lot.lot_type_name} {lot.lot_name}）象徵著當前的混沌局勢即將迎來轉機。籤詩以『日出風雲散』為喻，表明外在的阻礙與內心的焦慮正逐步消退，前方的道路正在展開。",
-            story_inspiration=f"借鑑典故【{lot.story}】，古人在面對困境時，關鍵在於堅守正道並保持耐性。這在心理學上相當於『情緒沉澱與認知重構』，唯有先穩住內在定力，方能看清外在局勢。",
-            situation_analysis=f"針對你所詢問的『{user_question}』：你目前可能正處於過渡期的心理拉扯中，容易被局部的未確定性所困擾。籤詩提示你，目前最需要的不是慌忙尋找外在解答，而是釐清當前能夠由自己掌控的核心要素。",
-            actions=ActionGuide(
-                dos=[
-                    "將焦點放在當下可直接控制的具體任務上，採取小步前進策略。",
-                    "主動與信任的夥伴或專業前輩溝通，尋求客觀回饋。",
-                    "給自己設定明確的休整時間，避免在焦慮時做出重大決策。"
-                ],
-                donts=[
-                    "避免陷入非黑即白的極端思維，不要過度放大暫時的挫折。",
-                    "切忌隨波逐流或急於求成而忽略了基本功的積累。",
-                    "不要將責任全盤歸咎於外在環境，而放棄了自我能動性。"
-                ]
-            ),
-            encouragement="籤詩是心靈的鏡子，真正的力量始終在你自己的心中。保持從容與信念，每一步紮實的探索都在為你的蛻變累積能量。"
-        )
-        return analysis, "內建心理學模擬引擎 (Fallback)"
+        analysis = build_smart_fallback_analysis(lot, user_question)
+        return analysis, "內建直白模擬引擎 (Fallback)"
 
-    system_prompt = """你是一位結合傳統東方智慧與現代認知心理學的「智慧解籤員與心靈陪伴導師」。
-【嚴格原則與底線】：
-1. 絕不進行算命、預測未來吉凶、八字算命、鐵口直斷或怪力亂神。
-2. 你的核心任務是：把籤詩原文與歷史典故作為「心理投射 (Psychological Projection)」與「認知再架構 (Cognitive Reframing)」的工具。
-3. 具備高度同理心、溫暖且理性，引導使用者從當下的焦慮或困境中，梳理出清晰的思緒與具體可行、可落地的行動建議 (Do's & Don'ts)。
-4. 請嚴格以繁體中文輸出符合指定 JSON Schema 的結構化格式。
+    system_prompt = """你是一位說話風格「超直白、接地氣、懂年輕人」的現代宮廟智慧解籤大師與生活軍師。
+【你的核心風格與說話原則】：
+1. 【直白俐落・直球對決】：年輕人最討厭文言八股文和打太極！使用者問是非題（如：會不會搶到票？要不要換工作？要不要告白？要不要去看演唱會？），你必須在 direct_verdict 裡直接給出乾脆清晰的答案、勝率或定調（例如：「大有希望，全力去搶就對了！」或「先緩緩，這坑可能比你想的深」）。
+2. 【全繁體中文・現代大白話口語】：
+   - 嚴禁使用生硬晦澀的教科書名詞（嚴禁出現：認知再架構、自我能動性、非黑即白思維、情緒沉澱、心理投射等假道學術語！）。
+   - 把古文籤詩和歷史典故（如關公、姜子牙、薛仁貴等）翻譯成現代生活一秒看懂的生動比喻（如用「手速快狠準」、「隊友神助攻」、「不要被畫大餅」等生動詞彙）。
+3. 【超實用、接地氣的實操指南 (Do's & Don'ts)】：
+   - 根據使用者問的具體情境（如搶演唱會門票、買房、轉職、感情），給予 3 條超具體落地、馬上能照著做的建議與避坑指南。
+4. 【同理心與熱血打氣】：像一個值得信賴、講義氣、說真話的酷學長或廟祝老友，給予滿滿能量與信心！
+5. 請嚴格以繁體中文輸出符合指定 JSON Schema 的結構化格式。
 """
 
     user_prompt = f"""
-【求籤者詢問事項/困境】：
+【求籤者提問】：
 {user_question}
 
 【抽得籤詩資訊】：
@@ -401,24 +492,25 @@ def generate_ai_interpretation(lot: LotInfo, user_question: str, requested_model
 - 典故歷史：
 {lot.story}
 
-請依照上述資訊，為求籤者提供結構化的解析。必須嚴格輸出為以下 JSON 格式：
+請依照上述資訊，以「年輕人一秒看懂的超級直白大白話」提供解析。必須嚴格輸出為以下 JSON 格式：
 {{
-  "poem_interpretation": "籤意白話轉譯 (以白話深入淺出闡述籤詩象徵的核心意境)",
-  "story_inspiration": "典故現代啟示 (解析歷史典故背後的心理學象徵意義與思維啟發)",
-  "situation_analysis": "處境解析 (結合使用者所問的具體問題，分析其當下心理盲點與局勢要點)",
+  "direct_verdict": "【直白解答/是非定調】針對使用者問題直接給定調（例如：大有希望！/ 建議先緩緩！/ 去就對了！），並給出清楚的機會或方向判斷，不打太極、不講文言文。",
+  "poem_interpretation": "【籤詩大白話】把古文籤詩用生動、生活化的大白話翻譯成現代人聽得懂的意思。",
+  "story_inspiration": "【典故白話講】用現代比喻（如職場、生活、搶票）白話講述歷史典故的核心啟發，講人話。",
+  "situation_analysis": "【針對你這件事的直白剖析】直球切入使用者問的具體事情（如 {user_question}），分析當下狀況與勝算關鍵。",
   "actions": {{
     "dos": [
-      "具體行動建議 1",
-      "具體行動建議 2",
-      "具體行動建議 3"
+      "超具體的實操步驟 1 (如搶票：提早10分鐘登入...)",
+      "超具體的實操步驟 2",
+      "超具體的實操步驟 3"
     ],
     "donts": [
-      "應避免的盲點或心態 1",
-      "應避免的盲點或心態 2",
-      "應避免的盲點或心態 3"
+      "千萬要避開的雷區 1 (如搶票：不要狂按F5被鎖IP...)",
+      "千萬要避開的雷區 2",
+      "千萬要避開的雷區 3"
     ]
   }},
-  "encouragement": "結語陪伴 (溫暖、賦權 Empowering 且具同理心的支持話語)"
+  "encouragement": "【為你打氣】像好友或熱血大師一樣的親切打氣金句"
 }}
 """
 
@@ -436,20 +528,15 @@ def generate_ai_interpretation(lot: LotInfo, user_question: str, requested_model
 
         content = response.choices[0].message.content
         parsed = json.loads(content)
+        # 若 LLM 遺漏 direct_verdict，自動補全
+        if "direct_verdict" not in parsed or not parsed["direct_verdict"]:
+            parsed["direct_verdict"] = f"【直白定調】：這是一張「{lot.grade}」籤，針對你問的「{user_question}」，整體局勢積極向上，把握時機全力以赴！"
+            
         return StructuredAnalysis(**parsed), model_id
     except Exception as e:
         logger.error(f"Error calling LLM ({model_id}): {e}")
-        # 若大模型發生異常，優雅降級回退為結構化模擬解讀
-        fallback_analysis = StructuredAnalysis(
-            poem_interpretation=f"此籤（{lot.lot_type_name} {lot.lot_name}）寓意轉機在即，沉著以對。籤文提示當前應先調順心態，方能在變動中洞察先機。",
-            story_inspiration=f"典故【{lot.story}】提示我們：行穩致遠，先求定力再求突破。",
-            situation_analysis=f"針對您所提問的『{user_question}』：當前局勢的核心關鍵在於梳理能夠掌控的要素，切忌急躁躁進。",
-            actions=ActionGuide(
-                dos=["先理清客觀事實，將目標拆解為每日可行的小任務。", "與信任的前輩或夥伴交流反饋。"],
-                donts=["避免在焦慮時做重大決策。", "切忌被一時的情緒波折牽著走。"]
-            ),
-            encouragement="心安則道隆，給自己一點沉澱的時間，答案就在內心深處。"
-        )
+        # 若大模型發生異常，回退為直白模擬解讀
+        fallback_analysis = build_smart_fallback_analysis(lot, user_question)
         return fallback_analysis, f"{model_id} (降級防護模式)"
 
 def save_draw_record(lot: LotInfo, user_question: str, analysis: StructuredAnalysis) -> Optional[str]:
@@ -653,7 +740,17 @@ async def interpret_lot(req: InterpretRequest):
     """
     effective_model = req.model or current_runtime_model
     logger.info(f"Received interpretation request - Model: {effective_model}, System: {req.lot_type}, Lot: {req.lot_number}, Question: {req.user_question}")
-    
+
+    # 0. 依籤詩系統動態驗證 lot_number 上限（避免 60_jiazi 接受 61~100 而靜默 fallback）
+    system_info = LOT_SYSTEMS.get(req.lot_type)
+    if system_info:
+        max_lots = system_info["max_lots"]
+        if req.lot_number > max_lots:
+            raise HTTPException(
+                status_code=422,
+                detail=f"【籤號超出範圍】{system_info['name']} 共有 {max_lots} 首籤，請輸入 1 ~ {max_lots} 之間的籤號。"
+            )
+
     # 1. 查詢籤詩資料
     lot = fetch_lot_from_db(req.lot_type, req.lot_number)
     

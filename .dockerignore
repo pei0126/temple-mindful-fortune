@@ -1,0 +1,33 @@
+# .dockerignore — 防止敏感檔案與不必要的檔案被打包進 Docker Image
+
+# 環境變數（含 API Key）— 應透過 Docker 環境變數或 Secrets 注入
+.env
+.env.local
+.env.*.local
+
+# 開發與測試檔案
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+.pytest_cache/
+test_*.py
+validate_data.py
+audit_html.py
+
+# 本地 SQLite 資料庫（容器啟動時應重新初始化）
+# temple.db
+
+# Git 相關
+.git/
+.gitignore
+
+# IDE 設定
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日誌與臨時檔案
+*.log
+*.tmp

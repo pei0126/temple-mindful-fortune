@@ -3,7 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>心靈解籤伴侶 ｜ 傳統靈籤與現代心理學賦權系統</title>
+  <title>心靈解籤伴侶 ｜ 傳統靈籤與現代 AI 智慧解籤</title>
+  <meta name="description" content="心靈解籤伴侶 — 三大宮廟籤詩系統（六十甲子、關聖帝君、觀音靈籤）結合 AI 提供現代白話解籤指引，幫助您在人生抉擇時找到方向。260 首靈籤全本典藏。">
+  <!-- OpenGraph -->
+  <meta property="og:title" content="心靈解籤伴侶 ｜ 傳統靈籤與現代 AI 智慧解籤">
+  <meta property="og:description" content="260 首傳統靈籤，結合大語言模型提供接地氣的白話解析與具體行動指引。三大籤詩系統：六十甲子籤、關聖帝君百籤、觀音靈籤。">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="心靈解籤伴侶 ｜ 傳統靈籤與現代 AI 智慧解籤">
+  <meta name="twitter:description" content="260 首傳統靈籤，AI 白話解析，三大宮廟籤詩系統一站搞定。">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -544,7 +552,7 @@
           <div class="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-xs text-slate-400 flex items-center gap-1.5">
               <i class="fa-solid fa-hands-holding text-amber-400"></i>
-              <span>誠心祈請 ｜ 系統將結合大語言模型為您進行認知再架構剖析</span>
+              <span>誠心祈請 ｜ 系統將搭配 AI 為您進行籤意白話剖析與具體行動指引</span>
             </div>
 
             <button
@@ -791,29 +799,43 @@
           <!-- Right: AI Insight & Action Guide -->
           <div class="md:col-span-7 space-y-4">
 
+            <!-- 0. 直白解答與神明定調 (Direct Verdict) -->
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-400 bg-gradient-to-r from-amber-500/20 via-slate-900/90 to-slate-900 border border-amber-500/30 stagger-in-1 shadow-lg shadow-amber-500/5">
+              <div class="flex items-center gap-2 mb-2 font-serif text-sm font-bold text-amber-300">
+                <span class="w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs">
+                  <i class="fa-solid fa-bullseye"></i>
+                </span>
+                <span>直白解答與指引定調</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-sans ml-auto font-normal">
+                  🔥 直球大白話
+                </span>
+              </div>
+              <p id="res-direct-verdict" class="text-sm sm:text-base font-bold text-amber-100 leading-relaxed font-sans"></p>
+            </div>
+
             <!-- 1. 白話轉譯 -->
-            <div class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-500 stagger-in-2">
-              <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-2 font-serif">
-                <i class="fa-solid fa-feather-pointed text-amber-400"></i>
-                籤意白話解析
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-l-emerald-500 stagger-in-2">
+              <h4 class="text-sm font-bold text-emerald-300 flex items-center gap-2 mb-2 font-serif">
+                <i class="fa-solid fa-feather-pointed text-emerald-400"></i>
+                籤詩大白話解析
               </h4>
-              <p id="res-poem-interpretation" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+              <p id="res-poem-interpretation" class="text-xs sm:text-sm text-slate-200 leading-relaxed"></p>
             </div>
 
             <!-- 2. 典故啟示與處境剖析 -->
             <div class="glass-card rounded-2xl p-5 space-y-4 stagger-in-3">
               <div>
-                <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-1.5 font-serif">
-                  <i class="fa-solid fa-lightbulb text-amber-400"></i>
-                  典故心理學啟發
+                <h4 class="text-sm font-bold text-amber-300 flex items-center gap-2 mb-1.5 font-serif">
+                  <i class="fa-solid fa-book-open text-amber-400"></i>
+                  歷史典故白話說
                 </h4>
                 <p id="res-story-inspiration" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
               </div>
 
               <div class="pt-3 border-t border-slate-800">
-                <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-1.5 font-serif">
+                <h4 class="text-sm font-bold text-sky-300 flex items-center gap-2 mb-1.5 font-serif">
                   <i class="fa-solid fa-crosshairs text-sky-400"></i>
-                  針對您當前處境的洞察
+                  針對這件事的分析
                 </h4>
                 <p id="res-situation-analysis" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
               </div>
@@ -827,16 +849,16 @@
                   <i class="fa-solid fa-circle-check"></i>
                   建議採取的行動 (Do's)
                 </h5>
-                <ul id="res-dos-list" class="space-y-1.5 text-xs text-slate-300 list-disc list-inside"></ul>
+                <ul id="res-dos-list" class="space-y-1.5 text-xs text-slate-300 list-disc list-inside leading-relaxed"></ul>
               </div>
 
               <!-- Don'ts -->
               <div class="bg-rose-950/30 border border-rose-800/50 rounded-xl p-4">
                 <h5 class="text-xs font-bold text-rose-400 flex items-center gap-1.5 mb-2.5">
                   <i class="fa-solid fa-triangle-exclamation"></i>
-                  應避免的盲點 (Don'ts)
+                  千萬要避開的雷區 (Don'ts)
                 </h5>
-                <ul id="res-donts-list" class="space-y-1.5 text-xs text-slate-300 list-disc list-inside"></ul>
+                <ul id="res-donts-list" class="space-y-1.5 text-xs text-slate-300 list-disc list-inside leading-relaxed"></ul>
               </div>
             </div>
 
@@ -844,9 +866,9 @@
             <div class="glass-card rounded-2xl p-5 border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-950/20 to-slate-900 stagger-in-4">
               <h4 class="text-sm font-bold text-purple-300 flex items-center gap-2 mb-2 font-serif">
                 <i class="fa-solid fa-heart-pulse text-purple-400"></i>
-                心靈陪伴與賦權結語
+                為你打氣加油
               </h4>
-              <p id="res-encouragement" class="text-xs sm:text-sm text-slate-300 leading-relaxed italic"></p>
+              <p id="res-encouragement" class="text-xs sm:text-sm text-purple-200 leading-relaxed font-medium"></p>
             </div>
 
           </div>
@@ -1049,7 +1071,7 @@
               type="password" 
               id="admin-password-input" 
               required
-              placeholder="請輸入管理者密碼 (預設: temple888)"
+              placeholder="請輸入管理者通行密碼"
               class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-center text-amber-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 tracking-widest transition"
             />
             <p id="admin-auth-error" class="hidden text-xs text-rose-400 mt-2 font-medium"></p>
@@ -1116,12 +1138,12 @@
             </div>
           </div>
 
-          <!-- 3. System & Database Health Stats -->
+          <!-- 3. System & Database Health Stats (Dynamic from /api/health) -->
           <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/80 space-y-2 text-xs">
             <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">系統即時監控資訊：</h5>
             <div class="flex items-center justify-between text-slate-300">
               <span class="text-slate-400">SQLite 籤詩資料庫：</span>
-              <span class="text-emerald-400 font-mono flex items-center gap-1"><i class="fa-solid fa-circle-check text-[10px]"></i> 已連線 (260 首全本)</span>
+              <span id="admin-db-status" class="text-slate-400 font-mono flex items-center gap-1">載入中...</span>
             </div>
             <div class="flex items-center justify-between text-slate-300">
               <span class="text-slate-400">目前執行時期主力模型：</span>
@@ -1129,7 +1151,7 @@
             </div>
             <div class="flex items-center justify-between text-slate-300">
               <span class="text-slate-400">安全金鑰狀態：</span>
-              <span class="text-emerald-400 font-mono">已配置 (Google Gemini)</span>
+              <span id="admin-llm-status" class="text-slate-400 font-mono">載入中...</span>
             </div>
           </div>
 
@@ -1236,6 +1258,42 @@
         }
       } catch (err) {
         console.error('Error fetching admin config:', err);
+      }
+
+      // 動態載入系統健康狀態（DB 連線 & LLM 金鑰）
+      try {
+        const healthResp = await fetch('/api/health');
+        const health = await healthResp.json();
+
+        const dbStatusElem = document.getElementById('admin-db-status');
+        if (dbStatusElem) {
+          const totalLots = health.total_lots_seeded || 0;
+          if (health.database_connected) {
+            dbStatusElem.className = 'text-emerald-400 font-mono flex items-center gap-1';
+            dbStatusElem.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i> 已連線 (${totalLots} 首全本)`;
+          } else {
+            dbStatusElem.className = 'text-rose-400 font-mono flex items-center gap-1';
+            dbStatusElem.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i> 資料庫連線失敗`;
+          }
+        }
+
+        const llmStatusElem = document.getElementById('admin-llm-status');
+        if (llmStatusElem) {
+          if (health.llm_configured) {
+            // 根據 active_model 判斷 provider
+            const activeM = health.active_model || '';
+            const provider = activeM.startsWith('gemini') ? 'Google Gemini' :
+                             activeM.startsWith('gpt') ? 'OpenAI' :
+                             activeM.startsWith('deepseek') ? 'DeepSeek' : '自訂';
+            llmStatusElem.className = 'text-emerald-400 font-mono';
+            llmStatusElem.innerText = `已配置 (${provider})`;
+          } else {
+            llmStatusElem.className = 'text-amber-400 font-mono';
+            llmStatusElem.innerText = '未配置 (Mock 模式)';
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching health status:', err);
       }
     }
 
@@ -1620,9 +1678,11 @@ ${daily_focus}
       navigator.clipboard.writeText(text).then(() => {
         const btnText = document.getElementById('daily-copy-btn-text');
         btnText.innerText = '已複製！';
-        setTimeout(() => {
-          btnText.innerText = '複製籤文';
-        }, 2000);
+        setTimeout(() => { btnText.innerText = '複製籤文'; }, 2000);
+      }).catch(() => {
+        const btnText = document.getElementById('daily-copy-btn-text');
+        btnText.innerText = '複製失敗';
+        setTimeout(() => { btnText.innerText = '複製籤文'; }, 2000);
       });
     }
 
@@ -1798,6 +1858,12 @@ ${daily_focus}
       document.getElementById('res-lot-story').innerText = lot.story;
       document.getElementById('res-draw-id').innerText = draw_id || 'Mock-Local-Session';
 
+      // 直白解答定調
+      const verdictElem = document.getElementById('res-direct-verdict');
+      if (verdictElem) {
+        verdictElem.innerText = analysis.direct_verdict || `【直白定調】：這是一張「${lot.grade}」籤，針對你問的問題，整體勢頭向好，保持自信全力衝刺！`;
+      }
+
       // AI 解析
       document.getElementById('res-poem-interpretation').innerText = analysis.poem_interpretation;
       document.getElementById('res-story-inspiration').innerText = analysis.story_inspiration;
@@ -1833,39 +1899,44 @@ ${daily_focus}
     function copyResult() {
       if (!currentResultData) return;
       const { lot, analysis } = currentResultData;
-      const text = `【心靈解籤伴侶 ｜ 解籤報告】
+      const text = `【心靈解籤伴侶 ｜ 靈籤直白解籤報告】
 籤系：${lot.lot_type_name || selectedPrayerLotTypeName}
 籤號：${lot.lot_name} (${lot.grade})
 籤詩原文：
 ${lot.content}
 典故：${lot.story}
 
-【白話籤意】：
+【🎯 直白解答與定調】：
+${analysis.direct_verdict || ''}
+
+【📜 籤詩大白話】：
 ${analysis.poem_interpretation}
 
-【典故啟示】：
+【📖 典故白話說】：
 ${analysis.story_inspiration}
 
-【處境分析】：
+【🔍 針對這件事的分析】：
 ${analysis.situation_analysis}
 
-【行動指引】：
+【💡 行動指引】：
 ✓ 建議採取 (Do's)：
 ${analysis.actions.dos.map(d => `• ${d}`).join('\n')}
 
-✗ 應當避免 (Don'ts)：
+✗ 千萬避開 (Don'ts)：
 ${analysis.actions.donts.map(d => `• ${d}`).join('\n')}
 
-【心靈陪伴結語】：
+【💖 為你打氣】：
 ${analysis.encouragement}
 `;
 
       navigator.clipboard.writeText(text).then(() => {
         const copyText = document.getElementById('copy-text');
         copyText.innerText = '已複製！';
-        setTimeout(() => {
-          copyText.innerText = '複製解析';
-        }, 2000);
+        setTimeout(() => { copyText.innerText = '複製解析'; }, 2000);
+      }).catch(() => {
+        const copyText = document.getElementById('copy-text');
+        copyText.innerText = '複製失敗';
+        setTimeout(() => { copyText.innerText = '複製解析'; }, 2000);
       });
     }
 
@@ -1982,9 +2053,11 @@ ${lot.story}
       navigator.clipboard.writeText(text).then(() => {
         const btnText = document.getElementById('lib-copy-text');
         btnText.innerText = '已複製！';
-        setTimeout(() => {
-          btnText.innerText = '複製籤文';
-        }, 2000);
+        setTimeout(() => { btnText.innerText = '複製籤文'; }, 2000);
+      }).catch(() => {
+        const btnText = document.getElementById('lib-copy-text');
+        btnText.innerText = '複製失敗';
+        setTimeout(() => { btnText.innerText = '複製籤文'; }, 2000);
       });
     }
   </script>
