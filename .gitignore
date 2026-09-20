@@ -21,3 +21,12 @@ Thumbs.db
 
 # Test outputs
 test_*.log
+
+# SQLite Database (Render will auto-init from schema.sql on deploy)
+temple.db
+
+# Temporary / scratch files
+scratch_script.js
+static/index_backup.html
+audit_html.py
+validate_data.py

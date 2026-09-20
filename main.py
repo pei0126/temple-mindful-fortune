@@ -5,7 +5,7 @@ import logging
 import sqlite3
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, status, Header
+from fastapi import FastAPI, HTTPException, status, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -197,19 +197,34 @@ def init_sqlite_db():
                     FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE SET NULL
                 );
             """)
+
+            # 建立 daily_lot_draws 表 (用於 IP 與裝置鎖定每日一籤，一天限抽一次)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS daily_lot_draws (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    draw_date TEXT NOT NULL,
+                    ip_address TEXT NOT NULL,
+                    device_id TEXT NOT NULL,
+                    lot_type TEXT NOT NULL,
+                    lot_number INTEGER NOT NULL,
+                    daily_focus TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
             
             # 建立索引
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_lots_type_number ON lots(lot_type, lot_number);")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_draws_created_at ON user_draws(created_at DESC);")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_daily_draws_lookup ON daily_lot_draws(draw_date, ip_address, device_id);")
             
             # 檢查並載入籤詩種子資料
             cursor.execute("SELECT COUNT(*) FROM lots")
             count = cursor.fetchone()[0]
             
-            if count < 260:
+            if count < 360:
                 json_path = os.path.join(os.path.dirname(__file__), "data", "lots_all.json")
                 if os.path.exists(json_path):
-                    logger.info("Loading 260 lots from data/lots_all.json into SQLite...")
+                    logger.info("Loading 360 lots from data/lots_all.json into SQLite...")
                     with open(json_path, "r", encoding="utf-8") as f:
                         all_lots = json.load(f)
                         for lot in all_lots:
@@ -226,7 +241,7 @@ def init_sqlite_db():
                                 lot["story"]
                             ))
                     conn.commit()
-                    logger.info("Successfully seeded 260 lots into SQLite database.")
+                    logger.info("Successfully seeded 360 lots into SQLite database.")
         
         logger.info(f"SQLite database is ready at: {DB_PATH}")
     except Exception as e:
@@ -240,6 +255,7 @@ class InterpretRequest(BaseModel):
     lot_number: int = Field(..., ge=1, le=100, description="抽取的籤號 (1 ~ 60 或 1 ~ 100)")
     user_question: str = Field(..., min_length=2, max_length=500, description="使用者目前面臨的困境或想詢問的事情")
     model: Optional[str] = Field(default=None, description="選用的 AI 模型 (如未指定則採用管理員預設模型)")
+    language: Optional[str] = Field(default="zh-TW", description="解籤輸出語言 (zh-TW: 繁體中文, en: English, ja: 日本語, ko: 한국어)")
 
 class AdminAuthRequest(BaseModel):
     password: str = Field(..., description="管理員密碼")
@@ -353,14 +369,113 @@ def fetch_lot_from_db(lot_type: str, lot_number: int) -> LotInfo:
         story="傳統典故。寓意撥雲見日，循序漸進，守持正念。"
     )
 
-def build_smart_fallback_analysis(lot: LotInfo, user_question: str) -> StructuredAnalysis:
-    """生成直白、接地氣、針對提問的備用結構化解籤（無 API 或連線失敗時的優質備援）"""
-    q = user_question.lower()
+def build_smart_fallback_analysis(lot: LotInfo, user_question: str, language: str = "zh-TW") -> StructuredAnalysis:
+    """生成直白、接地氣、針對提問的備用結構化解籤（支援繁中/英/日/韓多語系備援）"""
+    lang = (language or "zh-TW").lower()
     is_positive = any(g in lot.grade for g in ["大吉", "上吉", "中吉", "上上", "吉", "大安"])
     story_short = lot.story.split("。")[0] if lot.story else lot.lot_name
-    
-    # 判斷問題類型
-    if any(k in q for k in ["搶", "票", "門票", "演唱會", "買到", "bigbang"]):
+
+    if "en" in lang:
+        if is_positive:
+            verdict = f"【Direct Verdict】: Highly favorable (Yes / Go for it!). This lot is graded '{lot.grade}'. Momentum is on your side—act decisively!"
+            sit = f"Regarding your question '{user_question}': Conditions are aligning well. Instead of overthinking, focus on solid execution."
+            dos = [
+                f"【Core Strategy】Align with the auspicious omen of '{lot.lot_name}' and take the initiative without hesitation.",
+                "【Preparation】Double-check your key tools and channels in advance so you can execute smoothly at critical moments.",
+                f"【Mindset】Draw confidence from the historic lesson of '{story_short}'; staying grounded brings luck."
+            ]
+            donts = [
+                "【Avoid Hesitation】Do not second-guess yourself at the starting line; seizing the moment is key.",
+                "【Avoid Panic】Stay calm and ignore surrounding noise to perform at your best.",
+                "【Avoid Shortcuts】You are on the right path—avoid risky or unverified short cuts."
+            ]
+            encouragement = "Have faith in your preparation. The signs are clear—step forward boldly and good things will follow!"
+        else:
+            verdict = f"【Direct Verdict】: Exercise patience (Proceed with caution). This lot is graded '{lot.grade}'. Do not force an immediate outcome."
+            sit = f"Regarding your question '{user_question}': External conditions are fluctuating. Steady preparation beats rushed action."
+            dos = [
+                f"【Patience】Reflect on the wisdom of '{story_short}'; set rational boundaries and protect your daily peace of mind.",
+                "【Plan B】Prepare secondary options so you remain adaptable regardless of immediate results.",
+                "【Composure】Embrace a calm attitude; clarity comes when you let the dust settle."
+            ]
+            donts = [
+                "【Avoid Fixation】Do not make this single matter the sole measure of your happiness.",
+                "【Avoid Impulsive Bets】Do not overcommit resources when the timing is not yet ripe.",
+                "【Avoid Self-Doubt】Temporary delays are natural; avoid internal exhaustion."
+            ]
+            encouragement = "Take a deep breath. Slowing down today protects your long-term success. Trust the unfolding journey."
+        clean_content = lot.content.replace("\n", " ")
+        poem_interp = f"Poem ({lot.lot_name} / {lot.grade}): '{clean_content}'. In plain words: Steady dedication prepares the soil; when the right time arrives, things flourish naturally."
+        story_insp = f"Story Wisdom ({lot.story}): Success belongs to those who observe carefully and strike with calm precision."
+
+    elif "ja" in lang:
+        if is_positive:
+            verdict = f"【率直な判定】：大いに有望（進むべし・吉）！おみくじは「{lot.grade}」です。運気は追い風、迷わず果敢に行動しましょう。"
+            sit = f"ご相談の「{user_question}」について：機は熟しつつあります。自己疑念を捨て、着実な一歩を踏み出すことで勝機を掴めます。"
+            dos = [
+                f"【基本方針】「{lot.lot_name}」の吉兆に乗り、目標を定めたら躊躇なく行動に移すこと。",
+                "【具体的準備】重要な連絡や環境設定を事前に整え、好機を逃さない態勢を作ること。",
+                f"【心の持ち方】故事「{story_short}」の勢いに学び、堂々とした姿勢で幸運を引き寄せること。"
+            ]
+            donts = [
+                "【優柔不断は禁物】チャンスが来たら迷いすぎず、本質を掴むことに集中してください。",
+                "【焦りは禁物】周囲の雰囲気に流されず、冷静な判断を保つこと。",
+                "【無理な抜け道は避ける】正攻法で進むことが最大の近道です。"
+            ]
+            encouragement = "あなたの努力はしっかり実を結びます。自分を信じて前向きに進んでください！"
+        else:
+            verdict = f"【率直な判定】：今は静観・慎重に（急がず機を待つべし）。おみくじは「{lot.grade}」です。無理な前進は控えましょう。"
+            sit = f"ご相談の「{user_question}」について：周囲の状況が流動的です。焦って決断するより、地力を蓄える時期です。"
+            dos = [
+                f"【本質を見極める】故事「{story_short}」の教えを胸に、冷静に状況を整理し無理な執着を手放すこと。",
+                "【代替案の用意】万一に備えたプランBを整え、心の余裕を確保すること。",
+                "【基礎固め】日常のルーティンを大切にし、時が満ちるのを待つこと。"
+            ]
+            donts = [
+                "【過度な執着】一つの結果に囚われて心身を消耗しないこと。",
+                "【感情的な衝動買い・契約】焦って不透明な選択肢に飛びつかないこと。",
+                "【過度な自己否定】タイミングの問題です。自分を責めず充電に充ててください。"
+            ]
+            encouragement = "焦る必要はありません。今は力を蓄える大切な時間です。心が整えば道は自ずと拓けます。"
+        clean_content = lot.content.replace("\n", " ")
+        poem_interp = f"神籤の言葉（{lot.lot_name}・{lot.grade}）:「{clean_content}」。現代語訳：『雲が晴れて光が射すように、誠実に積み重ねた努力がやがて明るい未来を照らします』"
+        story_insp = f"歴史故事（{lot.story}）：『急がば回れ、肝心な局面で冷静さを保つ者が真の果実を得る』"
+
+    elif "ko" in lang:
+        if is_positive:
+            verdict = f"【명쾌한 결론】：승률 매우 높음 (적극 추진 추천)! 이번 점괘는 '{lot.grade}'입니다. 기운이 좋으니 망설이지 말고 결단하세요."
+            sit = f"질문하신 '{user_question}'에 대해: 타이밍과 여건이 갖춰지고 있습니다. 불안해하기보다 준비한 실력을 발휘할 때입니다."
+            dos = [
+                f"【핵심 전략】'{lot.lot_name}'의 길조를 따라 목표를 확정하고 과감하게 실행하세요.",
+                "【실전 준비】중요한 계정 및 일정을 사전 점검하여 결정적 순간에 막힘없이 대처하세요.",
+                f"【마인드셋】'{story_short}'의 고사처럼 흔들림 없는 확신을 가지면 행운이 따릅니다."
+            ]
+            donts = [
+                "【망설임 금지】기회가 왔을 때 지나치게 재거나 망설이지 마세요.",
+                "【조급함 금지】주변 분위기에 휩쓸려 페이스를 잃지 마세요.",
+                "【위험한 편법 지양】정공법으로 나아가는 것이 가장 확실한 지름길입니다."
+            ]
+            encouragement = "당신의 노력이 빛을 발할 순간입니다. 스스로를 믿고 당당하게 전진하세요!"
+        else:
+            verdict = f"【명쾌한 결론】：속도 조절 필요 (신중한 관망 추천)! 이번 점괘는 '{lot.grade}'입니다. 무리하게 밀어붙이지 마세요."
+            sit = f"질문하신 '{user_question}'에 대해: 외부 환경의 변수가 많습니다. 지금은 성급한 결정보다 내실을 다질 때입니다."
+            dos = [
+                f"【지혜로운 대처】'{story_short}'의 교훈처럼 마음의 여유를 두고 감정적 소모를 줄이세요.",
+                "【대체 플랜 마련】원하는 결과가 즉시 나오지 않더라도 대안을 준비해 두세요.",
+                "【마인드 정돈】통제할 수 있는 일상에 집중하며 흐름이 좋아질 때를 기다리세요."
+            ]
+            donts = [
+                "【과도한 집착】하나의 결과에 지나치게 매달려 일상을 망치지 마세요.",
+                "【충동적 결정】불안감 때문에 무리한 지출이나 섣부른 약속을 하지 마세요.",
+                "【자책감 지양】타이밍의 문제일 뿐입니다. 스스로를 탓하며 에너지를 낭비하지 마세요."
+            ]
+            encouragement = "잠시 숨을 고르세요. 지금의 멈춤은 더 큰 도약을 위한 준비 과정입니다."
+        clean_content = lot.content.replace("\n", " ")
+        poem_interp = f"점괘 원문 ({lot.lot_name} / {lot.grade}): '{clean_content}'. 현대적 풀이: '구름이 걷히고 햇살이 비추듯, 바른 마음으로 준비한 자에게 반드시 좋은 결실이 찾아옵니다.'"
+        story_insp = f"역사 고사 ({lot.story}): '흐름을 관찰하며 실력을 비축할 때 진정한 승리를 거둘 수 있습니다.'"
+
+    else:
+        # Default: 繁體中文 (zh-TW)
         if is_positive:
             verdict = f"【直白解答】：勝率極高，全力爭取！此籤為「{lot.grade}」，氣場正旺，把握時機果斷出手即可。"
             sit = f"針對你想問的「{user_question}」：此籤象徵時機與狀態俱備，與其焦慮自我懷疑，不如把準備工作做足，勝算都在你這邊。"
@@ -374,6 +489,7 @@ def build_smart_fallback_analysis(lot: LotInfo, user_question: str) -> Structure
                 "【忌慌亂】切勿因周遭緊張氛圍自亂陣腳，穩住呼吸操作才能發揮最佳水準。",
                 "【忌偏門】運勢已在正道，切忌急躁尋求不明來源或風險代辦，避免得不償失。"
             ]
+            encouragement = "別焦慮！神明已經給出方向，接下來就看你的行動了。相信自己的直覺與準備，放手去衝，好事自然發生！"
         else:
             verdict = f"【直白解答】：機率偏低，建議平常心看待！此籤為「{lot.grade}」，提醒莫過度執著於單一結果。"
             sit = f"針對你想問的「{user_question}」：籤詩暗示客觀競爭激烈或機緣未到，過度強求容易身心俱疲，放寬心胸方能撥雲見日。"
@@ -387,66 +503,10 @@ def build_smart_fallback_analysis(lot: LotInfo, user_question: str) -> Structure
                 "【忌衝動追高】若第一時間未能如願，千萬不要衝動花費超額代價或向不明第三方涉險購買。",
                 "【忌自我懷疑】機率與運氣本是客觀常態，沒拿到純屬機緣，切莫歸咎於個人能力而陷入內耗。"
             ]
-    elif any(k in q for k in ["轉職", "工作", "換工作", "離職", "跳槽", "面試", "升遷", "創業"]):
-        if is_positive:
-            verdict = f"【直白解答】：可以衝！這支籤是「{lot.grade}」，代表轉職或推進的好時機，新的機會將為你帶來突破！"
-            sit = f"針對你詢問的工作問題「{user_question}」：局勢正在好轉，你的能力已經累積足夠，該展現自信抓住機會。"
-            dos = [
-                f"【核心出擊】結合「{lot.lot_name}」破局之勢，梳理過往核心成果與解決問題的實例，大方爭取。",
-                "【人脈借力】主動向產業前輩或信任夥伴打聽市場真實情報，掌握第一手風向。",
-                f"【心態建設】學習典故【{story_short}】的主動果斷，拋開冒牌者症候群，相信自己值得更好。"
-            ]
-            donts = [
-                "【忌裹足不前】不要自我懷疑或因害怕跨出舒適圈而錯過推進視窗。",
-                "【忌貿然裸辭】未在實質合約確定前，仍需守好現有職責，確保安全著陸。",
-                "【忌被畫大餅】切莫被浮誇的承諾蒙蔽，務必檢視實際制度與工作環境。"
-            ]
-        else:
-            verdict = f"【直白解答】：建議先穩住，暫時不要衝動換！籤詩評等為「{lot.grade}」，提示目前環境變數多，先蓄積實力為上策。"
-            sit = f"針對工作問題「{user_question}」：當前外部局勢尚不明朗，急著跳槽可能會跳入另一個坑，建議騎驢找馬、先充實自己。"
-            dos = [
-                f"【深耕本分】以【{story_short}】為鑑，在現有崗位上把能學的技能與人脈資產拿到手。",
-                "【暗中佈局】趁外部風浪多時沉下心打磨核心實力，等待局勢反轉成熟的良機。",
-                "【多方求證】多方客觀調查目標領域的真實穩定度，避免因片面資訊做出誤判。"
-            ]
-            donts = [
-                "【忌情緒用事】不要因為一時受氣或疲憊就衝動提離職。",
-                "【忌盲目跟風】不要看到別人跳槽就跟著浮躁，每個人承擔風險的資本不同。",
-                "【忌忽視積累】不要輕易拋棄在目前環境中辛苦累積的信任資產。"
-            ]
-    else:
-        # 通用是非/決策題
-        if is_positive:
-            verdict = f"【直白解答】：答案偏向「是／正面肯定」！這是一張「{lot.grade}」的好籤，局勢向好，順勢而為！"
-            sit = f"針對你所問的「{user_question}」：阻礙正逐步散去，轉機就在眼前，只要照著核心目標穩步推進即可。"
-            dos = [
-                f"【順應吉時】以「{lot.lot_name}」為指引，保持信心與執行力，把想法具體落實為今日行動。",
-                "【積極溝通】主動爭取機會，及時向身邊值得信賴的夥伴尋求協同與反饋。",
-                f"【正向放大】借【{story_short}】之力量，專注於能創造價值的環節，擴大成果。"
-            ]
-            donts = [
-                "【忌過度內耗】不要前怕狼後怕虎，過度糾結未發生的細節反而消耗行動力。",
-                "【忌聽信雜音】不要輕易受旁人未經深思的消極評語動搖本心。",
-                "【忌半途鬆懈】好籤需要踏實落地，切莫在最後推進關頭掉以輕心。"
-            ]
-        else:
-            verdict = f"【直白解答】：建議「先緩緩／謹慎評估」！這張籤評等為「{lot.grade}」，提示目前變數較多，先停看聽比硬衝更安全。"
-            sit = f"針對你所問的「{user_question}」：眼前可能有些隱藏細節還沒看清，先冷靜梳理，不要急著在此刻下不可逆的重大決定。"
-            dos = [
-                f"【沉澱梳理】汲取典故【{story_short}】之啟示，收集客觀事證，把利弊清單具體化分析。",
-                "【留有餘地】給自己一段冷靜沉澱期，傾聽不同角度的客觀建言，做好多重避險準備。",
-                "【守住節奏】把重心放回自身可控的日常事務上，靜待時機成熟明朗。"
-            ]
-            donts = [
-                "【忌焦躁攤牌】切忌在情緒激動或焦慮狀態下做關鍵決定，以免事後懊悔。",
-                "【忌急於求成】切莫跳過必要的評估步驟而強行逆勢推進。",
-                "【忌忽視直覺警訊】不要強行合理化心中的疑慮，感覺不對勁時先停步往往最安全。"
-            ]
-
-    clean_content = lot.content.replace("\n", " ")
-    poem_interp = f"這首籤詩（{lot.lot_name}・{lot.grade}）原文是「{clean_content}」。用現代白話說就是：『好時機即將到來，先前的準備與努力都在打底！只要你心意堅定、做好該做的準備，時間到了自然順理成章拿下！』"
-    story_insp = f"典故【{lot.story}】用白話講：就像高手出招，關鍵在於『快、準、穩』！不要猶豫不決，機會出現的瞬間全力出手就是致勝關鍵。"
-    encouragement = "別焦慮！神明已經給出方向，接下來就看你的行動了。相信自己的直覺與準備，放手去衝，好事自然發生！"
+            encouragement = "深呼吸，放輕鬆！暫時的停頓不是失敗，而是替下一段更好的相遇鋪路。先愛護好自己！"
+        clean_content = lot.content.replace("\n", " ")
+        poem_interp = f"這首籤詩（{lot.lot_name}・{lot.grade}）原文是「{clean_content}」。用現代白話說就是：『好時機即將到來，先前的準備與努力都在打底！只要你心意堅定、做好該做的準備，時間到了自然順理成章拿下！』"
+        story_insp = f"典故【{lot.story}】用白話講：就像高手出招，關鍵在於『快、準、穩』！不要猶豫不決，機會出現的瞬間全力出手就是致勝關鍵。"
 
     return StructuredAnalysis(
         direct_verdict=verdict,
@@ -457,42 +517,65 @@ def build_smart_fallback_analysis(lot: LotInfo, user_question: str) -> Structure
         encouragement=encouragement
     )
 
-def generate_ai_interpretation(lot: LotInfo, user_question: str, requested_model: Optional[str] = None) -> tuple[StructuredAnalysis, str]:
-    """呼叫指定 LLM (Gemini 3.1 / GPT-4o 等) 進行超直白、接地氣的現代青年結構化解籤"""
+def generate_ai_interpretation(lot: LotInfo, user_question: str, requested_model: Optional[str] = None, language: str = "zh-TW") -> tuple[StructuredAnalysis, str]:
+    """呼叫指定 LLM (Gemini 3.1 / GPT-4o 等) 進行超直白、接地氣的現代青年結構化解籤 (支援繁中/英/日/韓)"""
     target_model = requested_model or current_runtime_model
     client, model_id = get_llm_client(target_model)
+    lang = (language or "zh-TW").lower()
     
     if not client:
         # Mock Response when API key is missing
         logger.info("Using Fallback Mock Interpretation Engine.")
-        analysis = build_smart_fallback_analysis(lot, user_question)
+        analysis = build_smart_fallback_analysis(lot, user_question, lang)
         return analysis, "內建直白模擬引擎 (Fallback)"
 
-    system_prompt = """你是一位說話風格「超直白、接地氣、懂年輕人」的現代宮廟智慧生活軍師與解籤大師。
+    # 針對語言設定專屬指導
+    if "en" in lang:
+        lang_instruction = """
+【Language Instruction: ENGLISH】:
+- Output ALL JSON field values strictly in clear, natural, modern, and empathetic ENGLISH.
+- Translate ancient Chinese poem lines and historic lore into vivid, relatable English metaphors.
+- Give crisp direct verdicts, practical Do's & Don'ts, and a warm, uplifting encouragement.
+"""
+    elif "ja" in lang:
+        lang_instruction = """
+【Language Instruction: JAPANESE (日本語)】:
+- Output ALL JSON field values strictly in natural, empathetic, and culturally nuanced JAPANESE (日本語).
+- 古文の籤詩や歴史故事を、現代の若者にも響く分かりやすい日本語（現代語訳・生きた比喩）で解説してください。
+- 曖昧さを排した明確な方向性（是・非・勝率）、実践的なアドバイス（Do's & Don'ts）、温かい励ましの言葉を出力してください。
+"""
+    elif "ko" in lang:
+        lang_instruction = """
+【Language Instruction: KOREAN (한국어)】:
+- Output ALL JSON field values strictly in natural, relatable, and encouraging KOREAN (한국어).
+- 고대 점괘 시문과 역사 고사를 현대 청년들이 바로 이해할 수 있는 생생한 한국어로 해설하세요.
+- 명쾌한 직설적 결론, 구체적 실천 지침 (Do's & Don'ts), 따뜻하고 힘이 나는 응원 문구를 출력하세요.
+"""
+    else:
+        lang_instruction = """
+【語言指示：台灣繁體中文 (Traditional Chinese)】:
+- 所有 JSON 欄位內容嚴格以繁體中文輸出。風格超直白、接地氣、懂年輕人、拒絕太極。
+- 將古文籤詩和歷史典故轉化為當代生活、職場、人際的生動比喻，字字入肉、講人話。
+"""
+
+    system_prompt = f"""你是一位說話風格「超直白、接地氣、懂年輕人」的現代宮廟智慧生活軍師與解籤大師。
 【核心風格與解籤原則】：
 1. 【直球對決・拒絕太極】：
-   - 使用者提問（不論是是非題、抉擇題或運勢勝算），必須在 direct_verdict 第一時間給出乾脆清晰的答案、勝率或方向定調（例如：「勝率極高，全力去衝！」、「機率渺茫，莫強求！」、「先按兵不動，等局勢明朗」）。
-2. 【全繁體中文・現代白話通俗易懂】：
-   - 嚴禁使用生硬晦澀的教科書術語或打官腔（嚴禁出現：認知再架構、自我能動性、非黑即白思維、情緒沉澱、心理投射等假道學名詞）。
-   - 將古文籤詩和歷史典故轉化為當代生活、職場、人際或具體情境的生動比喻，字字入肉、講人話。
+   - 使用者提問（不論是是非題、抉擇題或運勢勝算），必須在 direct_verdict 第一時間給出乾脆清晰的答案、勝率或方向定調。
+2. 【生動白話通俗易懂】：
+   - 嚴禁使用生硬晦澀的教科書術語或假道學名詞。
 3. 【嚴禁樣板套話・破除刻板常識 (Anti-Cliche & High Diversity)】：
-   - ⚠️【極重要】絕不可給出機械化、隨處可見的網路空泛常識（例如：切勿每次搶票都只會提『檢查 Wi-Fi/5G、提早登入、不要按 F5、不要買黃牛』；切勿每次轉職都只會提『更新履歷、騎驢找馬』；切勿每次感情都只會提『多溝通、約出門喝咖啡』）。
-   - 每一條具體實操 (Do's) 與避坑雷區 (Don'ts) 必須【100% 依據本次抽到的「籤詩詩意」＋「歷史典故核心哲理」＋「吉凶評等（吉/平/凶）」】與求籤者的具體問題深度融合！
-4. 【根據籤詩意境客製化策略】：
-   - 若為「隨緣放下、莫強求型」（如莊子鼓盆、陶淵明歸隱）：實操聚焦於「理性設限、設立停損點或預算上限、規劃落空時的愉悅轉念替代備案、把精力收回真實生活」；雷區聚焦於「切忌執念太深過度追高、切忌讓單一事件打亂生活重心與工作節奏」。
-   - 若為「果斷出擊、勢在必得型」（如關公斬顏良、薛仁貴破敵）：實操聚焦於「集中優勢資源、快狠準出手、排除外界雜音干擾、專注瞬間爆發」；雷區聚焦於「切忌優柔寡斷、切忌瞻前顧後錯失良機」。
-   - 若為「守候時機、蓄積底氣型」（如太公釣魚、蘇武牧羊）：實操聚焦於「靜觀其變、摸清環境規則、厚植底氣、等待反轉」；雷區聚焦於「切忌逆勢硬幹、切忌心浮氣躁急於求成」。
-   - 若為「借力使力、合縱連橫型」（如管鮑分金、桃園結義）：實操聚焦於「善用外部資源、凝聚可靠夥伴神助攻、建立共識」；雷區聚焦於「切忌盲目個人英雄主義、切忌猜忌內耗」。
-5. 【熱血真摯與心理賦權】：
-   - 像一個說真話、講義氣、站在使用者這邊的酷前輩或老廟祝，直白犀利卻充滿溫度，讓人看完豁然開朗。
-6. 請嚴格以繁體中文輸出符合指定 JSON Schema 的結構化格式。
+   - 每一條具體實操 (Do's) 與避坑雷區 (Don'ts) 必須 100% 依據本次抽到的「籤詩詩意」＋「歷史典故核心哲理」＋「吉凶評等」與求籤者的具體問題深度融合！
+4. 【熱血真摯與心理賦權】：
+   - 像一個說真話、講義氣、站在使用者這邊的酷前輩或老廟祝，直白犀利卻充滿溫度。
+{lang_instruction}
 """
 
     user_prompt = f"""
-【求籤者提問】：
+【求籤者提問 / User Question】：
 {user_question}
 
-【抽得籤詩詳細資訊】：
+【抽得籤詩詳細資訊 / Fortune Details】：
 - 籤詩系統：{lot.lot_type_name}
 - 籤號：{lot.lot_name} (第 {lot.lot_number} 籤)
 - 評等吉凶：{lot.grade}
@@ -501,33 +584,31 @@ def generate_ai_interpretation(lot: LotInfo, user_question: str, requested_model
 - 歷史典故：
 {lot.story}
 
-【解讀與輸出指示】：
-請完全吸收這首籤詩的詩意哲理與典故歷史，針對求籤者提出的具體問題「{user_question}」，給出獨一無二、絕無複製貼上感的現代直白結構化指引。
-
-請嚴格輸出為以下 JSON 格式：
+【解讀與輸出指示 / Output Schema in Target Language】：
+請嚴格輸出為以下 JSON 格式（所有欄位內容依指定語言輸出）：
 {{
-  "direct_verdict": "【直白解答/是非定調】針對使用者問題直接定調勝算與走向（不打太極、直球切入），並結合此籤吉凶給予一針見血的結論。",
-  "poem_interpretation": "【籤詩大白話】把籤詩原文用生動、生活化的大白話翻譯，點出詩中最關鍵的一句話對當前問題的指引。",
-  "story_inspiration": "【典故白話講】用現代生活比喻深入淺出講述歷史典故，點出神明想透過這個故事傳遞的心態與謀略，講人話。",
-  "situation_analysis": "【針對你這件事的直白剖析】將籤意與「{user_question}」緊密連結，分析當前形勢的利弊盲點與突破口。",
+  "direct_verdict": "Direct concise verdict on user question and outcome probability",
+  "poem_interpretation": "Plain modern translation of the poem highlighting the core message",
+  "story_inspiration": "Modern life metaphor explaining the historical lore and strategic lesson",
+  "situation_analysis": "In-depth analysis directly tailored to the user's specific question",
   "actions": {{
     "dos": [
-      "【核心策略】深層結合本籤詩意與典故哲理，針對當前問題提出的第一步具體實操破局法（請展現本籤獨特觀點，拒絕空泛常識）",
-      "【執行關鍵】結合當前情境，給出具體且跳脫平庸建議的落地手段或關鍵準備",
-      "【心態轉化與備案】依據本籤指引設計的心理調適、停損機制或備選替代方案"
+      "Concrete step 1 based on this lot's unique philosophical insight",
+      "Concrete step 2 for execution and key preparation",
+      "Mindset adaptation and backup plan"
     ],
     "donts": [
-      "【心態盲點】本籤最嚴厲警告的心態盲區或執念陷阱（緊扣籤詩哲理）",
-      "【致命地雷】針對這件事最容易踩中、會讓局勢惡化的衝動或不當行為",
-      "【無效消耗】該立即停止的自我懷疑、外部雜音干擾或過度執著"
+      "Crucial pitfall/blindspot warned by this lot",
+      "Dangerous impulsive behavior to strictly avoid",
+      "Ineffective emotional overthinking to stop immediately"
     ]
   }},
-  "encouragement": "【為你打氣】像好友或講義氣的廟祝軍師給予的熱血、溫暖且富有力量的打氣話語"
+  "encouragement": "Warm, empowering and punchy motivational closing message"
 }}
 """
 
     try:
-        logger.info(f"Invoking AI model: {model_id} for user question...")
+        logger.info(f"Invoking AI model: {model_id} (Lang: {lang}) for user question...")
         response = client.chat.completions.create(
             model=model_id,
             messages=[
@@ -548,7 +629,7 @@ def generate_ai_interpretation(lot: LotInfo, user_question: str, requested_model
     except Exception as e:
         logger.error(f"Error calling LLM ({model_id}): {e}")
         # 若大模型發生異常，回退為直白模擬解讀
-        fallback_analysis = build_smart_fallback_analysis(lot, user_question)
+        fallback_analysis = build_smart_fallback_analysis(lot, user_question, lang)
         return fallback_analysis, f"{model_id} (降級防護模式)"
 
 def save_draw_record(lot: LotInfo, user_question: str, analysis: StructuredAnalysis) -> Optional[str]:
@@ -686,12 +767,15 @@ async def get_lots_list(lot_type: Optional[str] = None):
 
 @app.get("/api/daily_lot")
 async def get_daily_lot(
+    request: Request,
     lot_type: str = "60_jiazi",
     date_str: Optional[str] = None,
-    user_id: Optional[str] = None,
-    redraw_index: int = 0
+    device_id: Optional[str] = None,
+    language: str = "zh-TW"
 ):
-    """取得當日專屬靈籤 (支援依日期、使用者隨機種子與重抽次數生成個人專屬靈籤與心理靜思賦權指引)"""
+    """
+    取得當日專屬靈籤（支援 IP 與裝置識別碼雙重綁定，一天嚴格限抽一次）
+    """
     import hashlib
     from datetime import date
     if not date_str:
@@ -702,58 +786,159 @@ async def get_daily_lot(
         
     system_info = LOT_SYSTEMS[lot_type]
     max_lots = system_info["max_lots"]
-    
-    # 構建專屬 Hash 種子：結合日期、籤系、使用者ID(如有)、重抽序號
-    seed_parts = [f"daily_{date_str}_{lot_type}"]
-    if user_id:
-        seed_parts.append(str(user_id).strip())
-    if redraw_index > 0:
-        seed_parts.append(f"redraw_{redraw_index}")
-    seed_str = "_".join(seed_parts)
 
-    hash_int = int(hashlib.md5(seed_str.encode()).hexdigest(), 16)
-    daily_lot_number = (hash_int % max_lots) + 1
-    
-    lot = fetch_lot_from_db(lot_type, daily_lot_number)
-    
-    # 豐富的每日心理賦權微啟發 (Zen Affirmations)
-    zen_affirmations = [
-        "不為模糊不清的未來擔憂，只為清清楚楚的現在努力。安住當下，心無罣礙。",
-        "事緩則圓，給思緒留一點沉澱的空間，迷霧散去，答案自會清澈浮現。",
-        "外在的境遇是映照內心的鏡子；守住自己的節奏與正念，境隨心轉。",
-        "每一次的停頓與等待，都是生命在為下一段躍進蓄積深厚能量。",
-        "接納客觀局勢的未知，把注意力收回到今天能掌控的一小步行動上。",
-        "以溫和而堅定的態度對待自己與他人，沉著從容，自帶光芒。",
-        "行到水窮處，坐看雲起時；轉念即是轉機，順應機緣方得自若。",
-        "人生沒有白走的路，每一步腳印都在替未來的開花結果鋪路。",
-        "當你停止內耗、專注於此刻能做的小事，宇宙便會開始為你調度資源。",
-        "順境時心懷謙卑與感恩，逆境時修養定力與智慧，心中自有一片晴空。",
-        "所有的焦慮皆來自對未發生的預設；深呼吸，相信自己內在的韌性。",
-        "萬事俱備不如心念篤定；帶著善意與信心出發，機緣自會在途中相遇。"
-    ]
-    daily_focus = zen_affirmations[hash_int % len(zen_affirmations)]
+    # 提取 Client IP
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        client_ip = forwarded.split(",")[0].strip()
+    elif request.client and request.client.host:
+        client_ip = request.client.host
+    else:
+        client_ip = "127.0.0.1"
 
-    return {
-        "success": True,
-        "date": date_str,
-        "lot_type": lot_type,
-        "lot_type_name": system_info["name"],
-        "lot_number": daily_lot_number,
-        "user_id": user_id,
-        "redraw_index": redraw_index,
-        "daily_focus": daily_focus,
-        "lot": lot
-    }
+    eff_device_id = (device_id or "").strip() or "device_unknown"
+
+    # 多語系每日心靈賦權微啟發 (Zen Affirmations)
+    lang = (language or "zh-TW").lower()
+    if "en" in lang:
+        affirmations = [
+            "Do not worry about the uncertain future; focus on the clear present. Stay centered in this moment.",
+            "Patience brings clarity. Give your thoughts space to settle, and the answer will naturally appear.",
+            "External circumstances reflect the inner mind; maintain your rhythm and inner peace.",
+            "Every pause and waiting period stores profound energy for your next breakthrough.",
+            "Accept uncertainty; refocus your energy on the single small step you can take today.",
+            "Treat yourself and others with gentle firmness; calm confidence radiates its own light.",
+            "Where waters end, clouds arise. A shift in perspective turns obstacles into serendipity.",
+            "No effort is ever wasted; every footprint paves the way for tomorrow's fruition.",
+            "When you stop overthinking and focus on what is before you, opportunities begin to align.",
+            "Practice gratitude in ease, cultivate wisdom in challenge; keep your inner sky clear."
+        ]
+    elif "ja" in lang:
+        affirmations = [
+            "不透明な未来を案ずるより、今できる目の前の一歩に集中しましょう。心穏やかに。",
+            "急いては事を仕損じる。心にゆとりを持てば、霧が晴れるように答えが見えてきます。",
+            "外の世界は心を映す鏡。自分のペースと誠実さを保てば、運気は必ず好転します。",
+            "立ち止まる時間は決して無駄ではありません。次の飛躍へのエネルギーを蓄えています。",
+            "先の見えない不安を手放し、今日コントロールできる小さな行動に意識を向けましょう。",
+            "自分にも他者にも優しく、芯を強く。落ち着いた佇まいは自ずと幸運を引き寄せます。",
+            "行きては水尽きる処、坐しては雲起こる時を見る。柔軟な心境こそ最大の強みです。",
+            "一歩一歩の足跡が、未来の豊かな実りを育んでいます。歩みを止めない自分を誇りましょう。"
+        ]
+    elif "ko" in lang:
+        affirmations = [
+            "불안한 미래를 걱정하기보다 명확한 현재에 집중하세요. 지금 이 순간에 머무르세요.",
+            "서두르지 마세요. 마음에 여유를 줄 때 복잡한 안개가 걷히고 답이 보입니다.",
+            "외부 상황은 마음의 거울입니다. 나만의 리듬과 중심을 지키면 상황은 달라집니다.",
+            "잠시 멈춰 서는 시간은 다음 도약을 위한 소중한 에너지를 축적하는 과정입니다.",
+            "통제할 수 없는 불확실성을 내려놓고, 오늘 내가 할 수 있는 작은 한 걸음에 집중하세요.",
+            "자신과 타인을 온화하면서도 단단하게 대하세요. 침착함 자체가 강력한 빛입니다.",
+            "물길이 다한 곳에서 피어오르는 구름을 보듯, 관점을 바꾸면 위기가 곧 기회가 됩니다.",
+            "인생에 헛된 경험은 없습니다. 모든 발걸음이 내일의 값진 결실을 만들고 있습니다."
+        ]
+    else:
+        affirmations = [
+            "不為模糊不清的未來擔憂，只為清清楚楚的現在努力。安住當下，心無罣礙。",
+            "事緩則圓，給思緒留一點沉澱的空間，迷霧散去，答案自會清澈浮現。",
+            "外在的境遇是映照內心的鏡子；守住自己的節奏與正念，境隨心轉。",
+            "每一次的停頓與等待，都是生命在為下一段躍進蓄積深厚能量。",
+            "接納客觀局勢的未知，把注意力收回到今天能掌控的一小步行動上。",
+            "以溫和而堅定的態度對待自己與他人，沉著從容，自帶光芒。",
+            "行到水窮處，坐看雲起時；轉念即是轉機，順應機緣方得自若。",
+            "人生沒有白走的路，每一步腳印都在替未來的開花結果鋪路。",
+            "當你停止內耗、專注於此刻能做的小事，宇宙便會開始為你調度資源。",
+            "順境時心懷謙卑與感恩，逆境時修養定力與智慧，心中自有一片晴空。"
+        ]
+
+    # 1. 查詢 SQLite 中今日此 IP 或 Device 是否已抽取過
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT * FROM daily_lot_draws
+                WHERE draw_date = ? AND (ip_address = ? OR (device_id != 'device_unknown' AND device_id = ?))
+                ORDER BY id ASC LIMIT 1
+            """, (date_str, client_ip, eff_device_id))
+            existing_row = cursor.fetchone()
+
+            if existing_row:
+                # 已經抽取過，返回已鎖定的籤詩
+                locked_lot_number = existing_row["lot_number"]
+                locked_lot_type = existing_row["lot_type"]
+                locked_focus = existing_row["daily_focus"] or affirmations[locked_lot_number % len(affirmations)]
+                lot = fetch_lot_from_db(locked_lot_type, locked_lot_number)
+
+                return {
+                    "success": True,
+                    "date": date_str,
+                    "lot_type": locked_lot_type,
+                    "lot_type_name": LOT_SYSTEMS.get(locked_lot_type, {}).get("name", "靈籤"),
+                    "lot_number": locked_lot_number,
+                    "device_id": eff_device_id,
+                    "daily_focus": locked_focus,
+                    "is_locked": True,
+                    "already_drawn_today": True,
+                    "lot": lot,
+                    "message": "今日已揭曉專屬心靈晨光（一裝置/IP 每日限抽乙次）"
+                }
+
+            # 2. 尚未抽取，透過 Hash 種子計算唯一籤號並存入資料庫
+            seed_str = f"daily_{date_str}_{client_ip}_{eff_device_id}_{lot_type}"
+            hash_int = int(hashlib.md5(seed_str.encode()).hexdigest(), 16)
+            daily_lot_number = (hash_int % max_lots) + 1
+            daily_focus = affirmations[hash_int % len(affirmations)]
+            
+            cursor.execute("""
+                INSERT INTO daily_lot_draws (draw_date, ip_address, device_id, lot_type, lot_number, daily_focus)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (date_str, client_ip, eff_device_id, lot_type, daily_lot_number, daily_focus))
+            conn.commit()
+
+            lot = fetch_lot_from_db(lot_type, daily_lot_number)
+
+            return {
+                "success": True,
+                "date": date_str,
+                "lot_type": lot_type,
+                "lot_type_name": system_info["name"],
+                "lot_number": daily_lot_number,
+                "device_id": eff_device_id,
+                "daily_focus": daily_focus,
+                "is_locked": True,
+                "already_drawn_today": False,
+                "lot": lot
+            }
+
+    except Exception as e:
+        logger.error(f"Error handling daily lot with DB lock: {e}")
+        # 降級種子模式
+        seed_str = f"daily_{date_str}_{lot_type}_{client_ip}"
+        hash_int = int(hashlib.md5(seed_str.encode()).hexdigest(), 16)
+        daily_lot_number = (hash_int % max_lots) + 1
+        daily_focus = affirmations[hash_int % len(affirmations)]
+        lot = fetch_lot_from_db(lot_type, daily_lot_number)
+        return {
+            "success": True,
+            "date": date_str,
+            "lot_type": lot_type,
+            "lot_type_name": system_info["name"],
+            "lot_number": daily_lot_number,
+            "device_id": eff_device_id,
+            "daily_focus": daily_focus,
+            "is_locked": True,
+            "already_drawn_today": False,
+            "lot": lot
+        }
 
 @app.post("/api/interpret", response_model=InterpretResponse)
 async def interpret_lot(req: InterpretRequest):
     """
-    接收籤系、抽籤號碼與使用者問題，查詢 SQLite 籤詩資料庫，進行 AI 心理學賦權解籤並存檔。
+    接收籤系、抽籤號碼、使用者問題與語系，查詢 SQLite 籤詩資料庫，進行 AI 心理學賦權解籤並存檔。
     """
     effective_model = req.model or current_runtime_model
-    logger.info(f"Received interpretation request - Model: {effective_model}, System: {req.lot_type}, Lot: {req.lot_number}, Question: {req.user_question}")
+    effective_lang = req.language or "zh-TW"
+    logger.info(f"Received interpretation request - Model: {effective_model}, Lang: {effective_lang}, System: {req.lot_type}, Lot: {req.lot_number}, Question: {req.user_question}")
 
-    # 0. 依籤詩系統動態驗證 lot_number 上限（避免 60_jiazi 接受 61~100 而靜默 fallback）
+    # 0. 依籤詩系統動態驗證 lot_number 上限
     system_info = LOT_SYSTEMS.get(req.lot_type)
     if system_info:
         max_lots = system_info["max_lots"]
@@ -766,8 +951,8 @@ async def interpret_lot(req: InterpretRequest):
     # 1. 查詢籤詩資料
     lot = fetch_lot_from_db(req.lot_type, req.lot_number)
     
-    # 2. 呼叫 AI 進行結構化解析
-    analysis, model_used = generate_ai_interpretation(lot, req.user_question, effective_model)
+    # 2. 呼叫 AI 進行結構化解析 (支援多語系)
+    analysis, model_used = generate_ai_interpretation(lot, req.user_question, effective_model, effective_lang)
     
     # 3. 儲存紀錄至 SQLite 資料庫
     draw_id = save_draw_record(lot, req.user_question, analysis)
