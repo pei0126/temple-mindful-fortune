@@ -98,12 +98,12 @@
     /* 籤筒搖動動畫 */
     @keyframes cylinder-shake {
       0%, 100% { transform: rotate(0deg) translateY(0); }
-      15% { transform: rotate(-9deg) translateX(-6px) translateY(-2px); }
-      30% { transform: rotate(8deg) translateX(6px) translateY(1px); }
-      45% { transform: rotate(-7deg) translateX(-4px) translateY(-2px); }
-      60% { transform: rotate(6deg) translateX(4px) translateY(1px); }
-      75% { transform: rotate(-4deg) translateX(-2px) translateY(-1px); }
-      90% { transform: rotate(3deg) translateX(2px) translateY(0); }
+      15% { transform: rotate(-2deg) translateY(-12px); }
+      30% { transform: rotate(2deg) translateY(4px); }
+      45% { transform: rotate(-1.5deg) translateY(-10px); }
+      60% { transform: rotate(1.5deg) translateY(2px); }
+      75% { transform: rotate(-1deg) translateY(-8px); }
+      90% { transform: rotate(1deg) translateY(0); }
     }
     .animate-cylinder-shake {
       animation: cylinder-shake 1.4s ease-in-out infinite;
@@ -127,8 +127,10 @@
     .animate-stick-c { animation: stick-bounce-c 0.5s ease-in-out infinite 0.05s alternate; }
 
     @keyframes stick-rise {
-      0% { transform: translateY(0) scale(1); opacity: 0.9; }
-      100% { transform: translateY(-48px) scale(1.15); opacity: 1; filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.95)); }
+      0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.9; }
+      60% { transform: translateY(-80px) scale(1.1) rotate(2deg); opacity: 1; }
+      80% { transform: translateY(-100px) scale(1.15) rotate(15deg); opacity: 1; }
+      100% { transform: translateY(-40px) translateX(30px) scale(1.15) rotate(60deg); opacity: 1; filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.95)); }
     }
     .animate-stick-rise {
       animation: stick-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -137,26 +139,22 @@
     /* 擲筊左筊 3D 拋擲動態 */
     @keyframes moonblock-toss-left {
       0% {
-        transform: translate3d(-30px, 60px, 0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(0.8);
-        opacity: 0.2;
-      }
-      20% {
-        transform: translate3d(-60px, -140px, 120px) rotateX(380deg) rotateY(-240deg) rotateZ(-90deg) scale(1.25);
+        transform: translate3d(0px, 80px, 50px) rotateX(20deg) rotateY(15deg) rotateZ(0deg) scale(1.1);
         opacity: 1;
       }
+      15% {
+        transform: translate3d(-10px, -40px, 80px) rotateX(120deg) rotateY(-50deg) rotateZ(-30deg) scale(1.15);
+      }
       45% {
-        transform: translate3d(-40px, -60px, 60px) rotateX(680deg) rotateY(-480deg) rotateZ(-180deg) scale(1.1);
+        transform: translate3d(-30px, 40px, 0) rotateX(360deg) rotateY(-180deg) rotateZ(-80deg) scale(0.95);
       }
       65% {
         /* 第一彈跳落地 */
-        transform: translate3d(-35px, 15px, 0) rotateX(880deg) rotateY(-680deg) rotateZ(-220deg) scale(0.95);
+        transform: translate3d(-35px, 15px, 0) rotateX(400deg) rotateY(-200deg) rotateZ(-120deg) scale(0.95);
       }
       80% {
         /* 緩衝微彈跳 */
-        transform: translate3d(-32px, -18px, 20px) rotateX(1020deg) rotateY(-710deg) rotateZ(-225deg) scale(1.02);
-      }
-      92% {
-        transform: translate3d(-30px, 5px, 0) rotateX(1080deg) rotateY(-720deg) rotateZ(-230deg) scale(0.98);
+        transform: translate3d(-32px, 5px, 15px) rotateX(430deg) rotateY(-210deg) rotateZ(-130deg) scale(1);
       }
       100% {
         transform: translate3d(var(--end-x-left, -30px), var(--end-y-left, 0px), 0) rotateX(var(--end-rotx-left, 0deg)) rotateY(var(--end-roty-left, 0deg)) rotateZ(var(--end-rotz-left, -15deg)) scale(1);
@@ -167,26 +165,22 @@
     /* 擲筊右筊 3D 拋擲動態 */
     @keyframes moonblock-toss-right {
       0% {
-        transform: translate3d(30px, 60px, 0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(0.8);
-        opacity: 0.2;
-      }
-      20% {
-        transform: translate3d(60px, -150px, 130px) rotateX(-360deg) rotateY(260deg) rotateZ(100deg) scale(1.25);
+        transform: translate3d(0px, 80px, 50px) rotateX(20deg) rotateY(-15deg) rotateZ(0deg) scale(1.1);
         opacity: 1;
       }
+      15% {
+        transform: translate3d(10px, -40px, 80px) rotateX(120deg) rotateY(50deg) rotateZ(30deg) scale(1.15);
+      }
       45% {
-        transform: translate3d(45px, -65px, 65px) rotateX(-660deg) rotateY(500deg) rotateZ(190deg) scale(1.1);
+        transform: translate3d(30px, 40px, 0) rotateX(360deg) rotateY(180deg) rotateZ(80deg) scale(0.95);
       }
       65% {
         /* 第一彈跳落地 */
-        transform: translate3d(35px, 15px, 0) rotateX(-860deg) rotateY(700deg) rotateZ(230deg) scale(0.95);
+        transform: translate3d(35px, 15px, 0) rotateX(400deg) rotateY(200deg) rotateZ(120deg) scale(0.95);
       }
       80% {
         /* 緩衝微彈跳 */
-        transform: translate3d(32px, -20px, 20px) rotateX(-1000deg) rotateY(715deg) rotateZ(235deg) scale(1.02);
-      }
-      92% {
-        transform: translate3d(30px, 5px, 0) rotateX(-1060deg) rotateY(720deg) rotateZ(238deg) scale(0.98);
+        transform: translate3d(32px, 5px, 15px) rotateX(430deg) rotateY(210deg) rotateZ(130deg) scale(1);
       }
       100% {
         transform: translate3d(var(--end-x-right, 30px), var(--end-y-right, 0px), 0) rotateX(var(--end-rotx-right, 0deg)) rotateY(var(--end-roty-right, 0deg)) rotateZ(var(--end-rotz-right, 20deg)) scale(1);
@@ -697,28 +691,9 @@
 
         <!-- STAGE 1: 搖筒求籤 (Bamboo Cylinder Shaking) -->
         <div id="anim-stage-cylinder" class="space-y-6">
-          <div class="relative w-36 h-48 mx-auto flex items-end justify-center">
-            <div class="absolute bottom-0 w-32 h-8 bg-red-900/20 rounded-sm blur-md"></div>
-            
-            <div id="anim-cylinder-box" class="relative z-10 animate-cylinder-shake flex flex-col items-center">
-              <div class="relative w-20 h-24 flex items-end justify-center space-x-1 mb-[-4px]">
-                <div class="w-2.5 h-16 bg-gradient-to-t from-amber-700 to-red-800 rounded-t-sm animate-stick-a border-t-2 border-red-500 shadow-sm"></div>
-                <div class="w-2.5 h-20 bg-gradient-to-t from-amber-700 to-amber-300 rounded-t-sm animate-stick-b border-t-2 border-red-500 shadow-sm"></div>
-                <div id="anim-rising-stick" class="w-3.5 h-24 bg-gradient-to-t from-red-900 via-amber-300 to-yellow-100 rounded-t-sm border-t-4 border-red-800 shadow-lg relative z-20">
-                  <span class="absolute top-1 left-0.5 right-0.5 text-[8px] text-amber-950 font-serif font-bold text-center leading-none">靈</span>
-                </div>
-                <div class="w-2.5 h-18 bg-gradient-to-t from-amber-700 to-amber-300 rounded-t-sm animate-stick-c border-t-2 border-red-500 shadow-sm"></div>
-                <div class="w-2.5 h-14 bg-gradient-to-t from-amber-700 to-red-800 rounded-t-sm animate-stick-a border-t-2 border-red-500 shadow-sm"></div>
-              </div>
-
-              <div class="w-24 h-28 bg-gradient-to-b from-amber-800 via-amber-900 to-yellow-950 rounded-b-2xl rounded-t-md border-2 border-red-900/60 shadow-xl relative overflow-hidden flex flex-col items-center justify-between p-2">
-                <div class="w-full h-1.5 bg-red-900/40 rounded-sm"></div>
-                <div class="w-10 h-12 rounded-xl border border-red-900/40 bg-[#0a0a0a]/60 flex items-center justify-center">
-                  <span class="text-xs font-serif font-bold text-[#D4AF37] tracking-wider poem-vertical">靈籤</span>
-                </div>
-                <div class="w-full h-1.5 bg-red-900/40 rounded-sm"></div>
-              </div>
-            </div>
+          <div class="relative w-full h-[240px] max-w-[240px] mx-auto rounded-lg overflow-visible flex items-center justify-center">
+            <img id="img-lot-stick" src="./lot_stick.png" class="absolute w-8 h-auto bottom-8 z-0 opacity-0" alt="Stick">
+            <img id="img-lot-cylinder" src="./lot_cylinder.png" class="relative z-10 w-40 h-auto animate-cylinder-shake" alt="Cylinder">
           </div>
 
           <div class="space-y-1.5">
@@ -731,30 +706,8 @@
 
         <!-- STAGE 2: 3D 擬真擲筊翻騰 (3D Moon Block Toss Stage) -->
         <div id="anim-stage-bwa" class="hidden space-y-6">
-          <div class="toss-arena relative w-72 h-48 mx-auto flex items-center justify-center">
-            
-            <!-- Dynamic Floor Shadow -->
-            <div id="prayer-floor-shadow" class="absolute bottom-6 w-44 h-10 bg-black/70 rounded-full blur-md animate-shadow-pulse"></div>
-
-            <!-- Left 3D Block -->
-            <div id="prayer-block-left" class="absolute z-20 flex flex-col items-center animate-toss-left">
-              <svg width="84" height="84" viewBox="0 0 100 100" class="drop-shadow-[0_12px_20px_rgba(225,29,72,0.6)]">
-                <!-- Convex Back (深紅木質立體圓凸脊) -->
-                <path d="M 15,50 C 15,15 85,15 85,50 C 72,32 28,32 15,50 Z" fill="url(#convexRedGrad)" stroke="#881337" stroke-width="2.5"/>
-                <!-- Spinal Ridge Highlight -->
-                <path d="M 22,46 C 30,28 70,28 78,46" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
-            </div>
-
-            <!-- Right 3D Block -->
-            <div id="prayer-block-right" class="absolute z-20 flex flex-col items-center animate-toss-right">
-              <svg width="84" height="84" viewBox="0 0 100 100" class="drop-shadow-[0_12px_20px_rgba(245,158,11,0.6)]">
-                <!-- Flat Face (金棕木質平滑剖面) -->
-                <path d="M 15,50 C 15,15 85,15 85,50 C 68,58 32,58 15,50 Z" fill="url(#flatGoldGrad)" stroke="#92400e" stroke-width="2.5"/>
-                <!-- Inner Bevel Outline -->
-                <path d="M 24,47 C 35,53 65,53 76,47" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
+          <div class="relative w-full h-[240px] max-w-[240px] mx-auto rounded-lg overflow-visible flex items-center justify-center">
+            <img id="img-bwa-result" src="./bwa_sheng.png" class="w-48 h-auto opacity-0" alt="Bwa Result">
           </div>
 
           <div class="space-y-1.5">
@@ -1026,26 +979,8 @@
           <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
 
           <!-- Dynamic Dynamic Floor Shadow -->
-          <div id="standalone-floor-shadow" class="absolute bottom-8 w-52 h-12 bg-black/80 rounded-full blur-md transition-all duration-300"></div>
-
-          <!-- Left Moon Block (左筊) -->
-          <div id="standalone-block-left" class="absolute z-20 flex flex-col items-center cursor-pointer transition-transform duration-300" onclick="triggerStandaloneToss()">
-            <svg id="svg-block-left" width="96" height="96" viewBox="0 0 100 100" class="drop-shadow-[0_10px_22px_rgba(225,29,72,0.5)]">
-              <!-- Convex Default (陰/凸) -->
-              <path d="M 15,50 C 15,15 85,15 85,50 C 72,32 28,32 15,50 Z" fill="url(#convexRedGrad)" stroke="#881337" stroke-width="2.5"/>
-              <path d="M 22,46 C 30,28 70,28 78,46" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-            <span id="standalone-label-left" class="text-[10px] font-serif text-rose-300 font-semibold mt-1">凸面（俯）</span>
-          </div>
-
-          <!-- Right Moon Block (右筊) -->
-          <div id="standalone-block-right" class="absolute z-20 flex flex-col items-center cursor-pointer transition-transform duration-300" onclick="triggerStandaloneToss()">
-            <svg id="svg-block-right" width="96" height="96" viewBox="0 0 100 100" class="drop-shadow-[0_10px_22px_rgba(245,158,11,0.5)]">
-              <!-- Flat Default (陽/平) -->
-              <path d="M 15,50 C 15,15 85,15 85,50 C 68,58 32,58 15,50 Z" fill="url(#flatGoldGrad)" stroke="#92400e" stroke-width="2.5"/>
-              <path d="M 24,47 C 35,53 65,53 76,47" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <span id="standalone-label-right" class="text-[10px] font-serif text-[#D4AF37] font-semibold mt-1">平面（仰）</span>
+          <div class="relative w-full h-full flex justify-center py-6 cursor-pointer z-10" onclick="triggerStandaloneToss()">
+            <img id="img-standalone-bwa" src="./bwa_sheng.png" class="w-48 h-auto opacity-0" alt="Bwa Standalone">
           </div>
 
         </div>
@@ -2075,32 +2010,14 @@
       const leftY = (Math.random() * 16 - 8);
       const rightY = (Math.random() * 16 - 8);
 
-      const blockLeft = document.getElementById('standalone-block-left');
-      const blockRight = document.getElementById('standalone-block-right');
-      const shadow = document.getElementById('standalone-floor-shadow');
-
-      blockLeft.style.setProperty('--end-x-left', `${leftX}px`);
-      blockLeft.style.setProperty('--end-y-left', `${leftY}px`);
-      blockLeft.style.setProperty('--end-rotz-left', `${leftRotZ}deg`);
-
-      blockRight.style.setProperty('--end-x-right', `${rightX}px`);
-      blockRight.style.setProperty('--end-y-right', `${rightY}px`);
-      blockRight.style.setProperty('--end-rotz-right', `${rightRotZ}deg`);
-
-      blockLeft.classList.remove('animate-toss-left');
-      blockRight.classList.remove('animate-toss-right');
-      shadow.classList.remove('animate-shadow-pulse');
-      void blockLeft.offsetWidth;
-      blockLeft.classList.add('animate-toss-left');
-      blockRight.classList.add('animate-toss-right');
-      shadow.classList.add('animate-shadow-pulse');
-
-      setTimeout(() => {
-        document.getElementById('svg-block-left').innerHTML = leftFace === 'convex' ? SVG_CONVEX : SVG_FLAT;
-        document.getElementById('svg-block-right').innerHTML = rightFace === 'convex' ? SVG_CONVEX : SVG_FLAT;
-        document.getElementById('standalone-label-left').innerText = leftFace === 'convex' ? '凸面（俯）' : '平面（仰）';
-        document.getElementById('standalone-label-right').innerText = rightFace === 'convex' ? '凸面（俯）' : '平面（仰）';
-      }, 700);
+      const bwaImg = document.getElementById('img-standalone-bwa');
+      if (bwaImg) {
+        bwaImg.src = `./bwa_${outcome}.png`;
+        bwaImg.classList.remove('opacity-0');
+        bwaImg.classList.remove('animate-toss-left');
+        void bwaImg.offsetWidth;
+        bwaImg.classList.add('animate-toss-left');
+      }
 
       setTimeout(() => {
         updateStandaloneOutcomeDisplay(outcome, leftFace, rightFace);
@@ -2393,7 +2310,7 @@ ${daily_focus}
       const stageCylinder = document.getElementById('anim-stage-cylinder');
       const stageBwa = document.getElementById('anim-stage-bwa');
       const stageAi = document.getElementById('anim-stage-ai');
-      const risingStick = document.getElementById('anim-rising-stick');
+      const risingStick = document.getElementById('img-lot-stick');
       
       document.getElementById('prayer-draw-card').classList.add('hidden');
       document.getElementById('prayer-error-state').classList.add('hidden');
@@ -2406,7 +2323,7 @@ ${daily_focus}
       stageCylinder.classList.remove('hidden');
       stageBwa.classList.add('hidden');
       stageAi.classList.add('hidden');
-      risingStick.classList.remove('animate-stick-rise');
+      if (risingStick) risingStick.classList.remove('animate-stick-rise');
 
       const step2 = document.getElementById('anim-step-2');
       const step3 = document.getElementById('anim-step-3');
@@ -2443,23 +2360,24 @@ ${daily_focus}
       const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
       try {
-        await sleep(900);
-        risingStick.classList.add('animate-stick-rise');
-        await sleep(600);
+        const stick = document.getElementById('img-lot-stick');
+        if (stick) stick.classList.remove('animate-stick-rise');
+        await sleep(1500);
+        if (stick) stick.classList.add('animate-stick-rise');
+        await sleep(1000);
 
         stageCylinder.classList.add('hidden');
         stageBwa.classList.remove('hidden');
         playWoodTossSound();
         document.getElementById('anim-bwa-lotname').innerText = `${selectedPrayerLotTypeName}・第 ${lotNumber} 籤`;
         
-        const leftBwa = document.getElementById('prayer-block-left');
-        const rightBwa = document.getElementById('prayer-block-right');
-        if (leftBwa && rightBwa) {
-          leftBwa.classList.remove('animate-toss-left');
-          rightBwa.classList.remove('animate-toss-right');
-          void leftBwa.offsetWidth;
-          leftBwa.classList.add('animate-toss-left');
-          rightBwa.classList.add('animate-toss-right');
+        const bwaImg = document.getElementById('img-bwa-result');
+        if (bwaImg) {
+          bwaImg.src = `./bwa_sheng.png`;
+          bwaImg.classList.remove('opacity-0');
+          bwaImg.classList.remove('animate-toss-left');
+          void bwaImg.offsetWidth;
+          bwaImg.classList.add('animate-toss-left');
         }
         await sleep(1500);
 
